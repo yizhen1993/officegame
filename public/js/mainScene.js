@@ -230,19 +230,20 @@ export class MainScene extends Phaser.Scene {
 
     // 7. Interactive Objects (Kept outside wallsGroup so they never create hidden obstacles)
     GATHER_CONFIG.INTERACTIVE_OBJECTS.forEach(obj => {
-      const item = this.add.image(obj.x, obj.y, obj.type === 'whiteboard' ? 'obj_whiteboard' :
+      const texKey = obj.type === 'whiteboard' ? 'obj_whiteboard' :
         obj.type === 'media' ? 'obj_projector' :
         obj.type === 'arcade' ? 'obj_arcade' :
         obj.type === 'coffee' ? 'obj_coffee' :
         obj.type === 'watercooler' ? 'obj_watercooler' :
         obj.type === 'notes' ? 'obj_bulletin' :
         obj.type === 'poker' ? 'obj_poker' :
-        obj.type === 'wheel' ? 'obj_wheel' : 'obj_whiteboard'
-      );
+        obj.type === 'wheel' ? 'obj_wheel' : 'obj_whiteboard';
+
+      const item = this.interactiveGroup.create(obj.x, obj.y, texKey);
       item.setData('config', obj);
-      this.physics.add.existing(item, true); // static body for prompt trigger
-      item.refreshBody();
-      this.interactiveGroup.add(item);
+      if (typeof item.refreshBody === 'function') {
+        item.refreshBody();
+      }
     });
 
     // Floating interaction prompt text (Gather v2 style: "[X] Press X to...")
@@ -274,30 +275,32 @@ export class MainScene extends Phaser.Scene {
   }
 
   placeFurniture(x, y, textureKey, solid = true) {
-    const item = this.add.image(x, y, textureKey);
     if (solid) {
-      this.physics.add.existing(item, true);
+      const item = this.wallsGroup.create(x, y, textureKey);
       // Precision hitboxes to prevent trapping players near chairs
       if (textureKey === 'desk_workstation') {
-        item.body.setSize(56, 16);
-        item.body.setOffset(4, 8);
+        item.setSize(56, 16);
+        item.setOffset(4, 8);
       } else if (textureKey === 'boardroom_table_piece') {
-        item.body.setSize(56, 18);
-        item.body.setOffset(4, 7);
+        item.setSize(56, 18);
+        item.setOffset(4, 7);
       } else if (textureKey === 'round_collab_table') {
-        item.body.setSize(34, 34);
-        item.body.setOffset(7, 7);
+        item.setSize(34, 34);
+        item.setOffset(7, 7);
       } else if (textureKey === 'poker_table_felt') {
-        item.body.setSize(80, 36);
-        item.body.setOffset(16, 14);
+        item.setSize(80, 36);
+        item.setOffset(16, 14);
       } else if (textureKey === 'coffee_table') {
-        item.body.setSize(30, 14);
-        item.body.setOffset(5, 5);
+        item.setSize(30, 14);
+        item.setOffset(5, 5);
       }
-      item.refreshBody();
-      this.wallsGroup.add(item);
+      if (typeof item.refreshBody === 'function') {
+        item.refreshBody();
+      }
+      return item;
+    } else {
+      return this.add.image(x, y, textureKey);
     }
-    return item;
   }
 
   isTyping() {
