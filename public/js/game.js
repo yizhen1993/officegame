@@ -29,12 +29,12 @@ class GatherAppController {
   }
 
   init() {
-    // 1. Initialize Phaser 3 Game Config
+    // 1. Initialize Phaser 3 Game Config (Fixed resolution & FIT mode for consistent device layout)
     const config = {
       type: Phaser.AUTO,
       parent: 'phaser-container',
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: GATHER_CONFIG.MAP_WIDTH_PX,
+      height: GATHER_CONFIG.MAP_HEIGHT_PX,
       pixelArt: true,
       roundPixels: true,
       physics: {
@@ -46,8 +46,10 @@ class GatherAppController {
       },
       scene: [MainScene],
       scale: {
-        mode: Phaser.Scale.RESIZE,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: GATHER_CONFIG.MAP_WIDTH_PX,
+        height: GATHER_CONFIG.MAP_HEIGHT_PX
       }
     };
 

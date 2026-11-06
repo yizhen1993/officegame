@@ -388,10 +388,10 @@ export class MainScene extends Phaser.Scene {
     // Physical collisions with walls & furniture
     this.playerCollider = this.physics.add.collider(this.localPlayer, this.wallsGroup);
 
-    // Camera follow with deadzone
+    // Fixed stationary camera showing full map identically on all devices
     this.cameras.main.setBounds(0, 0, GATHER_CONFIG.MAP_WIDTH_PX, GATHER_CONFIG.MAP_HEIGHT_PX);
-    this.cameras.main.startFollow(this.localPlayer, true, 0.1, 0.1);
-    this.cameras.main.setZoom(1.2);
+    this.cameras.main.setScroll(0, 0);
+    this.cameras.main.setZoom(1.0);
 
     // Immediately evaluate active space for initial spawn position
     this.updateCurrentSpace();
