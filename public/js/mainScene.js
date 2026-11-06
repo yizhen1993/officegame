@@ -388,6 +388,9 @@ export class MainScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, GATHER_CONFIG.MAP_WIDTH_PX, GATHER_CONFIG.MAP_HEIGHT_PX);
     this.cameras.main.startFollow(this.localPlayer, true, 0.1, 0.1);
     this.cameras.main.setZoom(1.2);
+
+    // Immediately evaluate active space for initial spawn position
+    this.updateActiveSpace();
   }
 
   createPlayerHUD(name, status) {

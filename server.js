@@ -357,19 +357,29 @@ io.on('connection', (socket) => {
 
   const defaultSetup = generateRandomAvatar();
 
+  // Spawn Point: Bottom-Right of the Pantry / Cafeteria
+  // Pantry bounds: x1: 1088, y1: 704, x2: 1568, y2: 1184 (Whole map: 1600 x 1216)
+  const spawnBaseX = 1472; // Tile 46 (bottom-right floor of pantry)
+  const spawnBaseY = 1120; // Tile 35 (bottom-right floor of pantry)
+  // Slight jitter (+/- 24px) so simultaneous players don't overlap on the exact same pixel
+  const jitterX = (Math.floor(Math.random() * 5) - 2) * 12;
+  const jitterY = (Math.floor(Math.random() * 3) - 1) * 12;
+  const spawnX = spawnBaseX + jitterX;
+  const spawnY = spawnBaseY + jitterY;
+
   const newPlayer = {
     id: socket.id,
     name: defaultSetup.name,
     avatar: defaultSetup.avatar,
-    x: 800, // Center of Open Office / Hallway
-    y: 600,
-    direction: 'down',
+    x: spawnX,
+    y: spawnY,
+    direction: 'up', // Facing into the lively pantry area
     anim: 'idle',
     isSitting: false,
     chairId: null,
     isGhost: false,
     isDancing: false,
-    activeSpace: 'open_office',
+    activeSpace: 'cafeteria',
     avState: {
       mic: false,
       camera: false,
