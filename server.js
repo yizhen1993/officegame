@@ -368,6 +368,10 @@ io.on('connection', (socket) => {
   const spawnX = spawnBaseX + jitterX;
   const spawnY = spawnBaseY + jitterY;
 
+  const tile = Math.floor(spawnX / 32);
+  const row = Math.floor(spawnY / 32);
+  console.log(`[Spawn] Player ${socket.id} spawned at tile: ${tile}, row: ${row} (x: ${spawnX}, y: ${spawnY})`);
+
   const newPlayer = {
     id: socket.id,
     name: defaultSetup.name,

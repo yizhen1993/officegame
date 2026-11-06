@@ -364,6 +364,10 @@ export class MainScene extends Phaser.Scene {
   // LOCAL PLAYER INITIALIZATION
   // ==========================================================================
   initLocalPlayer(playerData) {
+    const tile = Math.floor(playerData.x / GATHER_CONFIG.TILE_SIZE);
+    const row = Math.floor(playerData.y / GATHER_CONFIG.TILE_SIZE);
+    console.log(`[Spawn] Player spawned at tile: ${tile}, row: ${row} (x: ${playerData.x}, y: ${playerData.y})`);
+
     const key = `avatar_${playerData.id}`;
     AvatarGenerator.generateSpritesheet(this, key, playerData.avatar);
 
