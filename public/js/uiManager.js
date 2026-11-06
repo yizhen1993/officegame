@@ -421,8 +421,8 @@ export class UIManager {
     // Unmute / autoplay unlock on first user gesture (satisfies modern browser autoplay policy)
     const unlockAudio = () => {
       if (!this.isMusicMuted) {
-        this.sendIframeCommand('bg-music-iframe', 'unMute');
-        this.sendIframeCommand('bg-music-iframe', 'playVideo');
+        this.sendIframeCommand('projector-iframe', 'unMute');
+        this.sendIframeCommand('projector-iframe', 'playVideo');
       }
       window.removeEventListener('click', unlockAudio);
       window.removeEventListener('keydown', unlockAudio);
@@ -632,7 +632,11 @@ export class UIManager {
     this.closeActiveModal();
     const modalEl = this.modals[modalKey];
     if (modalEl) {
-      modalEl.classList.remove('hidden');
+      if (modalKey === 'media') {
+        modalEl.classList.remove('is-hidden');
+      } else {
+        modalEl.classList.remove('hidden');
+      }
       this.activeModal = modalEl;
 
       if (modalKey === 'arcade' && this.arcadeGame) {
@@ -654,7 +658,11 @@ export class UIManager {
 
   closeActiveModal() {
     if (this.activeModal) {
-      this.activeModal.classList.add('hidden');
+      if (this.activeModal === this.modals.media) {
+        this.activeModal.classList.add('is-hidden');
+      } else {
+        this.activeModal.classList.add('hidden');
+      }
       this.activeModal = null;
     }
     if (this.arcadeGame) {
@@ -988,7 +996,6 @@ export class UIManager {
   toggleMusicMute() {
     this.isMusicMuted = !this.isMusicMuted;
     if (this.isMusicMuted) {
-      this.sendIframeCommand('bg-music-iframe', 'mute');
       this.sendIframeCommand('projector-iframe', 'mute');
       if (this.musicMuteIcon) this.musicMuteIcon.textContent = '🔇';
       if (this.musicMuteBtn) {
@@ -998,8 +1005,6 @@ export class UIManager {
       if (this.musicIcon) this.musicIcon.classList.remove('animate-pulse');
       this.showToast('🔇 Office music muted', '#64748B');
     } else {
-      this.sendIframeCommand('bg-music-iframe', 'unMute');
-      this.sendIframeCommand('bg-music-iframe', 'playVideo');
       this.sendIframeCommand('projector-iframe', 'unMute');
       this.sendIframeCommand('projector-iframe', 'playVideo');
       if (this.musicMuteIcon) this.musicMuteIcon.textContent = '🔊';
@@ -1017,7 +1022,6 @@ export class UIManager {
     this.currentMedia = media;
     const iframe = document.getElementById('projector-iframe');
     const titleEl = document.getElementById('projector-title');
-    const bgIframe = document.getElementById('bg-music-iframe');
 
     const cleanTitle = (media.title || 'lofi hip hop radio - beats to relax/study to').replace(/^▶\s*/, '');
 
@@ -1030,21 +1034,15 @@ export class UIManager {
       this.musicTitle.title = cleanTitle;
     }
 
-    // 2. Update background radio stream iframe
-    const muteParam = this.isMusicMuted ? 1 : 0;
-    const videoId = media.videoId || 'jfKfPfyJRdk';
-    const bgEmbedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=${muteParam}&loop=1&playlist=${videoId}&controls=0`;
-    if (bgIframe) {
-      bgIframe.src = bgEmbedUrl;
-    }
+    // 2. Synchronize master video/audio iframe (Single unified source of truth)
+    if (iframe) {
+      const muteParam = this.isMusicMuted ? 1 : 0;
+      const videoId = media.videoId || 'jfKfPfyJRdk';
+      const targetEmbedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=${muteParam}&loop=1&playlist=${videoId}&controls=1`;
 
-    // 3. Update projector modal iframe
-    if (iframe && media.embedUrl) {
-      let modalEmbedUrl = media.embedUrl;
-      if (!modalEmbedUrl.includes('enablejsapi=1')) {
-        modalEmbedUrl += (modalEmbedUrl.includes('?') ? '&' : '?') + 'enablejsapi=1';
+      if (!iframe.src || !iframe.src.includes(videoId)) {
+        iframe.src = targetEmbedUrl;
       }
-      iframe.src = modalEmbedUrl;
     }
   }
 

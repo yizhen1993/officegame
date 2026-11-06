@@ -62,9 +62,9 @@ export class MainScene extends Phaser.Scene {
         const py = y * T + T / 2;
         let tileKey = 'floor_wood_light';
 
-        // Boardroom (Top-Left)
+        // Texas Hold'em VIP Poker Club (Top-Left)
         if (x >= 1 && x <= 16 && y >= 1 && y <= 14) {
-          tileKey = 'floor_wood_dark';
+          tileKey = 'floor_carpet_casino';
         }
         // Brainstorm Lab (Top-Right)
         else if (x >= 34 && x <= 48 && y >= 1 && y <= 14) {
@@ -82,9 +82,9 @@ export class MainScene extends Phaser.Scene {
         else if (x >= 34 && x <= 48 && y >= 22 && y <= 36) {
           tileKey = 'floor_tile_bistro';
         }
-        // Texas Hold'em Poker Club (Bottom-Center)
+        // Executive Boardroom & Meeting Plaza (Bottom-Center)
         else if (x >= 18 && x <= 32 && y >= 27 && y <= 36) {
-          tileKey = 'floor_carpet_casino';
+          tileKey = 'floor_wood_dark';
         }
 
         this.add.image(px, py, tileKey);
@@ -93,7 +93,7 @@ export class MainScene extends Phaser.Scene {
 
     // 2. Area Rugs
     this.add.image(288, 992, 'floor_rug_ornate').setScale(2); // In Lounge
-    this.add.image(800, 992, 'floor_rug_ornate').setScale(1.5); // In Welcome Foyer
+    this.add.image(800, 1024, 'floor_rug_ornate').setScale(1.6); // Under Boardroom conference table
 
     // 3. Perimeter Boundary Walls
     for (let x = 0; x < W; x++) {
@@ -168,9 +168,8 @@ export class MainScene extends Phaser.Scene {
     }
 
     // 5. Furniture Placement
-    // 5A. Boardroom Conference Table
-    this.placeFurniture(240, 240, 'boardroom_table_piece', true);
-    this.placeFurniture(304, 240, 'boardroom_table_piece', true);
+    // 5A. Kosmi Texas Hold'em VIP Poker Table (Top-Left Enclosed Room)
+    this.placeFurniture(272, 240, 'poker_table_felt', false);
 
     // 5B. Brainstorm Collaboration Table
     this.placeFurniture(1328, 256, 'round_collab_table', true);
@@ -195,8 +194,9 @@ export class MainScene extends Phaser.Scene {
     this.placeFurniture(1296, 928, 'coffee_table', true);
     this.placeFurniture(1296, 1056, 'coffee_table', true);
 
-    // 5G. Kosmi Texas Hold'em Poker Table (Passable so all 6 seats and south area are completely accessible)
-    this.placeFurniture(800, 1024, 'poker_table_felt', false);
+    // 5G. Executive Boardroom Conference Table (South-Center Plaza, Passable for seamless chair access)
+    this.placeFurniture(768, 1024, 'boardroom_table_piece', false);
+    this.placeFurniture(832, 1024, 'boardroom_table_piece', false);
 
     // 5H. Office Plants (Passable so no corner traps)
     this.placeFurniture(80, 80, 'plant_ficus', false);

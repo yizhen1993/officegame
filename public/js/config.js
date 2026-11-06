@@ -23,10 +23,10 @@ export const GATHER_CONFIG = {
   SPACES: {
     boardroom: {
       id: 'boardroom',
-      name: 'Boardroom Alpha',
+      name: 'Executive Boardroom',
       color: '#4338CA', // Indigo
-      bounds: { x1: 32, y1: 32, x2: 512, y2: 448 },
-      desc: 'Executive meeting room with 10 conference seats & presentation screen.'
+      bounds: { x1: 576, y1: 864, x2: 1024, y2: 1184 },
+      desc: 'Executive meeting plaza with conference seats & synchronized presentation screen.'
     },
     brainstorm: {
       id: 'brainstorm',
@@ -74,8 +74,8 @@ export const GATHER_CONFIG = {
       id: 'poker_room',
       name: 'Kosmi Texas Hold\'em Poker Club',
       color: '#059669', // Emerald felt
-      bounds: { x1: 576, y1: 864, x2: 1024, y2: 1184 },
-      desc: 'Multiplayer No-Limit Texas Hold\'em poker room cloned 1-to-1 from Kosmi.io. Sit at any chair to play!'
+      bounds: { x1: 32, y1: 32, x2: 512, y2: 448 },
+      desc: 'Private VIP Texas Hold\'em poker room cloned 1-to-1 from Kosmi.io. Sit at any chair to play!'
     },
     open_office: {
       id: 'open_office',
@@ -87,15 +87,15 @@ export const GATHER_CONFIG = {
 
   // Chairs list: Exact pixel placement and facing direction
   CHAIRS: [
-    // Boardroom Alpha (10 chairs around conference table)
-    { id: 'br_chair_top_1', x: 224, y: 196, direction: 'down', spaceId: 'boardroom' },
-    { id: 'br_chair_top_2', x: 272, y: 196, direction: 'down', spaceId: 'boardroom' },
-    { id: 'br_chair_top_3', x: 320, y: 196, direction: 'down', spaceId: 'boardroom' },
-    { id: 'br_chair_bot_1', x: 224, y: 284, direction: 'up', spaceId: 'boardroom' },
-    { id: 'br_chair_bot_2', x: 272, y: 284, direction: 'up', spaceId: 'boardroom' },
-    { id: 'br_chair_bot_3', x: 320, y: 284, direction: 'up', spaceId: 'boardroom' },
-    { id: 'br_chair_left',  x: 180, y: 240, direction: 'right', spaceId: 'boardroom' },
-    { id: 'br_chair_right', x: 364, y: 240, direction: 'left', spaceId: 'boardroom' },
+    // Executive Boardroom Conference Chairs (South-Center Plaza)
+    { id: 'br_chair_top_1', x: 752, y: 980, direction: 'down', spaceId: 'boardroom' },
+    { id: 'br_chair_top_2', x: 800, y: 980, direction: 'down', spaceId: 'boardroom' },
+    { id: 'br_chair_top_3', x: 848, y: 980, direction: 'down', spaceId: 'boardroom' },
+    { id: 'br_chair_bot_1', x: 752, y: 1068, direction: 'up', spaceId: 'boardroom' },
+    { id: 'br_chair_bot_2', x: 800, y: 1068, direction: 'up', spaceId: 'boardroom' },
+    { id: 'br_chair_bot_3', x: 848, y: 1068, direction: 'up', spaceId: 'boardroom' },
+    { id: 'br_chair_left',  x: 708, y: 1024, direction: 'right', spaceId: 'boardroom' },
+    { id: 'br_chair_right', x: 892, y: 1024, direction: 'left', spaceId: 'boardroom' },
 
     // Brainstorm Lab (Round collaboration table)
     { id: 'bs_chair_top',   x: 1328, y: 216, direction: 'down', spaceId: 'brainstorm' },
@@ -143,13 +143,13 @@ export const GATHER_CONFIG = {
     { id: 'lounge_sofa_2', x: 256, y: 880, direction: 'down', spaceId: 'lounge' },
     { id: 'lounge_sofa_3', x: 280, y: 880, direction: 'down', spaceId: 'lounge' },
 
-    // Kosmi Texas Hold'em Poker Table (6-Seat Table)
-    { id: 'poker_chair_1', x: 752, y: 976, direction: 'down', spaceId: 'poker_room', seatIndex: 0 },
-    { id: 'poker_chair_2', x: 848, y: 976, direction: 'down', spaceId: 'poker_room', seatIndex: 1 },
-    { id: 'poker_chair_3', x: 888, y: 1024, direction: 'left', spaceId: 'poker_room', seatIndex: 2 },
-    { id: 'poker_chair_4', x: 848, y: 1072, direction: 'up', spaceId: 'poker_room', seatIndex: 3 },
-    { id: 'poker_chair_5', x: 752, y: 1072, direction: 'up', spaceId: 'poker_room', seatIndex: 4 },
-    { id: 'poker_chair_6', x: 712, y: 1024, direction: 'right', spaceId: 'poker_room', seatIndex: 5 }
+    // Kosmi Texas Hold'em VIP Poker Table (Top-Left 6-Seat VIP Room)
+    { id: 'poker_chair_1', x: 236, y: 196, direction: 'down', spaceId: 'poker_room', seatIndex: 0 },
+    { id: 'poker_chair_2', x: 308, y: 196, direction: 'down', spaceId: 'poker_room', seatIndex: 1 },
+    { id: 'poker_chair_3', x: 348, y: 240, direction: 'left', spaceId: 'poker_room', seatIndex: 2 },
+    { id: 'poker_chair_4', x: 308, y: 284, direction: 'up', spaceId: 'poker_room', seatIndex: 3 },
+    { id: 'poker_chair_5', x: 236, y: 284, direction: 'up', spaceId: 'poker_room', seatIndex: 4 },
+    { id: 'poker_chair_6', x: 196, y: 240, direction: 'right', spaceId: 'poker_room', seatIndex: 5 }
   ],
 
   // Interactive Objects with Gather.town prompt
@@ -159,8 +159,8 @@ export const GATHER_CONFIG = {
       type: 'poker',
       name: 'Kosmi Texas Hold\'em Poker Table',
       prompt: 'Press X to open Poker Table',
-      x: 800,
-      y: 928,
+      x: 272,
+      y: 150,
       width: 96,
       height: 48,
       modalId: 'modal-poker'
@@ -179,10 +179,10 @@ export const GATHER_CONFIG = {
     {
       id: 'obj_projector',
       type: 'media',
-      name: 'Presentation Screen',
-      prompt: 'Press X to open Media Player',
-      x: 272,
-      y: 96,
+      name: 'Executive Presentation Screen',
+      prompt: 'Press X to open Media & Live Radio Player',
+      x: 800,
+      y: 912,
       width: 96,
       height: 54,
       modalId: 'modal-media'

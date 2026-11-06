@@ -242,15 +242,23 @@
     </div>
   </div>
 
-  <!-- Modal 2: Presentation / Media Player -->
-  <div id="modal-media" class="gather-modal-backdrop hidden">
+  <!-- Modal 2: Unified Presentation & Live Media Player -->
+  <div id="modal-media" class="gather-modal-backdrop modal-media-backdrop is-hidden">
     <div class="gather-modal-card w-[860px]">
       <div class="p-4 border-b border-slate-700 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
-          <span class="text-xl">📺</span>
+          <div class="w-8 h-8 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-sm text-rose-400">
+            <span class="animate-pulse">📻</span>
+          </div>
           <div>
-            <h3 id="projector-title" class="font-black text-sm text-slate-100">Presentation Projector</h3>
-            <p class="text-[11px] text-slate-400">Shared room video stream</p>
+            <div class="flex items-center gap-2">
+              <h3 id="projector-title" class="font-black text-sm text-slate-100">Live Office Media & Radio Stream</h3>
+              <span class="text-[9px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 font-extrabold border border-rose-500/30 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                LIVE SYNCED
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400">Synchronized YouTube & live radio audio/video across all players</p>
           </div>
         </div>
         <button class="btn-close-modal">✕</button>
@@ -621,12 +629,7 @@
     </div>
   </div>
 
-  <!-- Hidden Background Office Live Radio Stream -->
-  <div id="bg-audio-host" class="fixed -bottom-96 -right-96 w-1 h-1 opacity-0 pointer-events-none overflow-hidden" aria-hidden="true">
-    <iframe id="bg-music-iframe" width="200" height="200" src="https://www.youtube.com/embed/jfKfPfyJRdk?enablejsapi=1&autoplay=1&mute=0&loop=1&playlist=jfKfPfyJRdk&controls=0" frameborder="0" allow="autoplay; encrypted-media"></iframe>
-  </div>
-
   <!-- Entry Script (ES Module with cache busting) -->
-  <script type="module" src="./js/game.js?v=2.2"></script>
+  <script type="module" src="./js/game.js?v=2.3"></script>
 </body>
 </html>

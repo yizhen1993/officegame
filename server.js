@@ -53,11 +53,11 @@ const GATHER_OFFICE_STATE = {
   players: {}, // socket.id -> player object
   spaces: {
     open_office: { name: 'Open Office Hallway', maxCapacity: 50, isPrivate: false },
-    boardroom: { name: 'Boardroom Alpha', maxCapacity: 10, isPrivate: true },
+    boardroom: { name: 'Executive Boardroom', maxCapacity: 12, isPrivate: true },
     brainstorm: { name: 'Brainstorm Lab', maxCapacity: 8, isPrivate: true },
     lounge: { name: 'Cozy Lounge & Fireplace', maxCapacity: 12, isPrivate: true },
     cafeteria: { name: 'Cafeteria & Arcade Bar', maxCapacity: 16, isPrivate: true },
-    poker_room: { name: 'Texas Hold\'em Poker Lounge', maxCapacity: 12, isPrivate: true },
+    poker_room: { name: 'Kosmi Texas Hold\'em Poker Club', maxCapacity: 12, isPrivate: true },
     pod_1: { name: 'Quiet Focus Pod 1', maxCapacity: 2, isPrivate: true },
     pod_2: { name: 'Quiet Focus Pod 2', maxCapacity: 2, isPrivate: true },
     pod_3: { name: 'Quiet Focus Pod 3', maxCapacity: 2, isPrivate: true },
