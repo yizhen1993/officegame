@@ -19,10 +19,10 @@ export const GATHER_CONFIG = {
   INTERACTION_DISTANCE: 56, // Distance to show "[X] Press X to interact"
   PROXIMITY_AUDIO_DISTANCE: 220,
 
-  // Default Spawn Point (Bottom-Right of the Pantry / Cafeteria)
+  // Default Spawn Point (Extreme East-South Corner of the Whole Map)
   SPAWN_POINT: {
-    x: 1472,
-    y: 1120,
+    x: 1536,
+    y: 1152,
     spaceId: 'cafeteria'
   },
 

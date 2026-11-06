@@ -357,13 +357,14 @@ io.on('connection', (socket) => {
 
   const defaultSetup = generateRandomAvatar();
 
-  // Spawn Point: Bottom-Right of the Pantry / Cafeteria
-  // Pantry bounds: x1: 1088, y1: 704, x2: 1568, y2: 1184 (Whole map: 1600 x 1216)
-  const spawnBaseX = 1472; // Tile 46 (bottom-right floor of pantry)
-  const spawnBaseY = 1120; // Tile 35 (bottom-right floor of pantry)
-  // Slight jitter (+/- 24px) so simultaneous players don't overlap on the exact same pixel
-  const jitterX = (Math.floor(Math.random() * 5) - 2) * 12;
-  const jitterY = (Math.floor(Math.random() * 3) - 1) * 12;
+  // Spawn Point: Extreme East-South (Bottom-Right) Corner of the Whole Map
+  // Map dimensions: 1600 x 1216 (W: 50 tiles, H: 38 tiles)
+  // East wall starts at x=1568, South wall starts at y=1184
+  const spawnBaseX = 1536; // Extreme East corner floor tile
+  const spawnBaseY = 1152; // Extreme South corner floor tile
+  // Slight interior jitter so simultaneous players don't stack directly on each other
+  const jitterX = -Math.floor(Math.random() * 3) * 12;
+  const jitterY = -Math.floor(Math.random() * 3) * 12;
   const spawnX = spawnBaseX + jitterX;
   const spawnY = spawnBaseY + jitterY;
 
