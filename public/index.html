@@ -569,6 +569,12 @@
         🏆 Winner Announcement
       </div>
 
+      <!-- Turn & Action Notification Banner -->
+      <div id="poker-turn-banner" class="hidden px-4 py-2 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 text-slate-950 font-black text-xs text-center shadow-lg animate-pulse flex items-center justify-center gap-2">
+        <span>🔔</span>
+        <span id="poker-turn-banner-text">IT'S YOUR TURN! Choose your action.</span>
+      </div>
+
       <!-- Poker Table Felt Canvas/Layout -->
       <div class="relative p-6 flex flex-col items-center justify-center min-h-[440px] bg-radial-gradient from-slate-900 to-slate-950 overflow-hidden">
         <!-- Oval Green Felt Table -->
@@ -601,6 +607,32 @@
           <div id="poker-seat-4" class="absolute -bottom-6 left-28 z-20"></div>
           <!-- Seat 5: Far Left -->
           <div id="poker-seat-5" class="absolute top-1/2 -translate-y-1/2 -left-8 z-20"></div>
+        </div>
+      </div>
+
+      <!-- Waiting / Ready Console (Visible when waiting for players to ready up) -->
+      <div id="poker-ready-console" class="px-6 py-3.5 bg-slate-900/95 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-lg shadow">
+            🎮
+          </div>
+          <div>
+            <div id="poker-ready-status-title" class="text-xs font-black text-slate-100 flex items-center gap-2">
+              <span>Ready to Play?</span>
+              <span id="poker-ready-count-badge" class="px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-mono font-black text-amber-400">
+                0/0 Ready
+              </span>
+            </div>
+            <div id="poker-ready-status-desc" class="text-[11px] font-medium text-slate-400">
+              All seated players must be Ready in order to start the game.
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="poker-btn-ready" class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20 transition active:scale-95 flex items-center gap-1.5 cursor-pointer">
+            <span id="poker-btn-ready-icon">✅</span>
+            <span id="poker-btn-ready-text">I'm Ready</span>
+          </button>
         </div>
       </div>
 
@@ -639,6 +671,6 @@
   </div>
 
   <!-- Entry Script (ES Module with cache busting) -->
-  <script type="module" src="./js/game.js?v=2.3"></script>
+  <script type="module" src="./js/game.js?v=2.4"></script>
 </body>
 </html>

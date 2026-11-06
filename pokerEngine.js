@@ -175,6 +175,8 @@ class PokerEngine {
     this.bigBlind = 100;
     this.turnSecondsLeft = 20;
     this.timerInterval = null;
+    this.startTimeout = null;
+    this.nextHandTimeout = null;
     this.handWinnerInfo = null;
     this.actedSeats = new Set();
   }
@@ -184,7 +186,7 @@ class PokerEngine {
   }
 
   getActivePlayers() {
-    return this.seats.filter(s => s !== null && !s.folded && s.chips + s.currentBet > 0);
+    return this.seats.filter(s => s !== null && s.inCurrentHand && !s.folded && (s.chips > 0 || s.currentBet > 0 || s.isAllIn));
   }
 
   sit(socketId, playerName, avatar, seatIndex, chairId) {
@@ -201,13 +203,17 @@ class PokerEngine {
       if (seatIndex === -1) return false;
     }
 
+    const isMidGame = (this.stage !== 'waiting' && this.stage !== 'showdown');
+
     this.seats[seatIndex] = {
       id: socketId,
       name: playerName || 'Player',
       avatar: avatar || {},
       chips: 10000,
       currentBet: 0,
-      folded: false,
+      folded: isMidGame, // If joined mid-hand, wait for next hand
+      inCurrentHand: !isMidGame,
+      ready: false, // Players must ready in order to start
       cards: [],
       isAllIn: false,
       seatIndex,
@@ -215,11 +221,39 @@ class PokerEngine {
     };
 
     this.broadcastState();
+    return true;
+  }
 
-    if (this.stage === 'waiting' && this.getSeatedCount() >= 2) {
-      setTimeout(() => this.startNewHand(), 1000);
+  setReady(socketId, isReady) {
+    const player = this.seats.find(s => s && s.id === socketId);
+    if (!player) return false;
+
+    if (typeof isReady === 'boolean') {
+      player.ready = isReady;
+    } else {
+      player.ready = !player.ready;
+    }
+
+    this.broadcastState();
+
+    if (this.stage === 'waiting') {
+      this.checkAllReadyAndStart();
     }
     return true;
+  }
+
+  checkAllReadyAndStart() {
+    if (this.stage !== 'waiting') return;
+    const seated = this.seats.filter(s => s !== null);
+    if (seated.length >= 2 && seated.every(s => s.ready)) {
+      if (this.startTimeout) clearTimeout(this.startTimeout);
+      this.startTimeout = setTimeout(() => {
+        const curSeated = this.seats.filter(s => s !== null);
+        if (this.stage === 'waiting' && curSeated.length >= 2 && curSeated.every(s => s.ready)) {
+          this.startNewHand();
+        }
+      }, 1000);
+    }
   }
 
   stand(socketId) {
@@ -227,21 +261,52 @@ class PokerEngine {
     if (idx === -1) return false;
 
     const player = this.seats[idx];
-    if (this.turnSeat === idx) {
-      this.fold(idx);
+    const isMidGame = (this.stage !== 'waiting' && this.stage !== 'showdown');
+    const wasTurn = (this.turnSeat === idx);
+
+    // If leaving in the middle of a game:
+    // The player loses their bet amount (it stays on the table in this.pot).
+    // The player's hand is folded and removed from the active hand.
+    if (isMidGame) {
+      player.folded = true;
+      player.inCurrentHand = false;
     }
 
+    // Vacate seat
     this.seats[idx] = null;
-    this.broadcastState();
 
-    if (this.getSeatedCount() < 2 && this.stage !== 'waiting') {
-      this.resetTable();
+    if (isMidGame) {
+      const active = this.getActivePlayers();
+
+      if (active.length === 1) {
+        // If only 1 player left: they take all the money on the bet table
+        const soleSurvivor = active[0];
+        this.endHandSingleWinner(soleSurvivor, `🏆 ${soleSurvivor.name} won ${this.pot} 🪙 (${player.name} left the table)!`);
+      } else if (active.length > 1) {
+        // Remaining players continue playing
+        if (wasTurn) {
+          this.turnSeat = this.findNextSeated(idx);
+          this.startTurnTimer();
+        }
+        this.checkRoundProgression();
+      } else {
+        // 0 players remain
+        this.resetTable();
+      }
+    } else {
+      if (this.stage === 'waiting') {
+        this.checkAllReadyAndStart();
+      }
+      this.broadcastState();
     }
+
     return true;
   }
 
   startNewHand() {
-    const seated = this.seats.map((s, idx) => ({ s, idx })).filter(item => item.s !== null);
+    if (this.startTimeout) clearTimeout(this.startTimeout);
+    if (this.nextHandTimeout) clearTimeout(this.nextHandTimeout);
+    const seated = this.seats.filter(s => s !== null);
     if (seated.length < 2) {
       this.stage = 'waiting';
       this.broadcastState();
@@ -258,15 +323,19 @@ class PokerEngine {
 
     // Advance dealer button
     let nextDealer = (this.dealerSeat + 1) % 6;
-    while (!this.seats[nextDealer]) {
+    let loops = 0;
+    while (!this.seats[nextDealer] && loops < 6) {
       nextDealer = (nextDealer + 1) % 6;
+      loops++;
     }
     this.dealerSeat = nextDealer;
 
     // Reset players & deal 2 private cards
     this.seats.forEach(s => {
       if (s) {
+        if (s.chips <= 0) s.chips = 10000; // Friendly reload if broke
         s.folded = false;
+        s.inCurrentHand = true;
         s.isAllIn = false;
         s.currentBet = 0;
         s.cards = [this.deck.pop(), this.deck.pop()];
@@ -303,7 +372,7 @@ class PokerEngine {
     let next = (fromIdx + 1) % 6;
     let count = 0;
     while (count < 6) {
-      if (this.seats[next] && !this.seats[next].folded) {
+      if (this.seats[next] && !this.seats[next].folded && this.seats[next].inCurrentHand) {
         return next;
       }
       next = (next + 1) % 6;
@@ -453,7 +522,7 @@ class PokerEngine {
       }
     });
 
-    const share = Math.floor(this.pot / winners.length);
+    const share = Math.floor(this.pot / (winners.length || 1));
     winners.forEach(w => {
       w.chips += share;
     });
@@ -467,43 +536,90 @@ class PokerEngine {
     };
 
     this.pot = 0;
+    this.stage = 'showdown';
     this.broadcastState();
 
-    // Reset for next hand after celebration delay
-    setTimeout(() => {
-      this.startNewHand();
-    }, 6000);
+    // Reset to waiting stage after celebration delay so players ready up again
+    if (this.nextHandTimeout) clearTimeout(this.nextHandTimeout);
+    this.nextHandTimeout = setTimeout(() => {
+      this.stage = 'waiting';
+      this.communityCards = [];
+      this.pot = 0;
+      this.currentBet = 0;
+      this.turnSeat = null;
+      this.handWinnerInfo = null;
+      this.seats.forEach(s => {
+        if (s) {
+          s.ready = false;
+          s.folded = false;
+          s.inCurrentHand = false;
+          s.currentBet = 0;
+          s.cards = [];
+        }
+      });
+      this.broadcastState();
+    }, 5000);
   }
 
-  endHandSingleWinner(winner) {
+  endHandSingleWinner(winner, customDesc) {
     if (this.timerInterval) clearInterval(this.timerInterval);
-    winner.chips += this.pot;
+    const wonPot = this.pot;
+    winner.chips += wonPot;
 
     this.handWinnerInfo = {
-      winners: [{ id: winner.id, name: winner.name, chipsWon: this.pot }],
-      description: `🏆 ${winner.name} won ${this.pot} 🪙 (All opponents folded)!`
+      winners: [{ id: winner.id, name: winner.name, chipsWon: wonPot }],
+      description: customDesc || `🏆 ${winner.name} won ${wonPot} 🪙 (All opponents folded)!`
     };
 
     this.pot = 0;
     this.stage = 'showdown';
     this.broadcastState();
 
-    setTimeout(() => {
-      this.startNewHand();
+    if (this.nextHandTimeout) clearTimeout(this.nextHandTimeout);
+    this.nextHandTimeout = setTimeout(() => {
+      this.stage = 'waiting';
+      this.communityCards = [];
+      this.pot = 0;
+      this.currentBet = 0;
+      this.turnSeat = null;
+      this.handWinnerInfo = null;
+      this.seats.forEach(s => {
+        if (s) {
+          s.ready = false;
+          s.folded = false;
+          s.inCurrentHand = false;
+          s.currentBet = 0;
+          s.cards = [];
+        }
+      });
+      this.broadcastState();
     }, 4000);
   }
 
   resetTable() {
     if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.startTimeout) clearTimeout(this.startTimeout);
+    if (this.nextHandTimeout) clearTimeout(this.nextHandTimeout);
     this.stage = 'waiting';
     this.communityCards = [];
     this.pot = 0;
     this.turnSeat = null;
     this.handWinnerInfo = null;
+    this.seats.forEach(s => {
+      if (s) {
+        s.ready = false;
+        s.folded = false;
+        s.inCurrentHand = false;
+        s.currentBet = 0;
+        s.cards = [];
+      }
+    });
     this.broadcastState();
   }
 
   getPublicState() {
+    const seated = this.seats.filter(s => s !== null);
+    const readyCount = seated.filter(s => s.ready).length;
     return {
       stage: this.stage,
       pot: this.pot,
@@ -513,6 +629,9 @@ class PokerEngine {
       turnSecondsLeft: this.turnSecondsLeft,
       communityCards: this.communityCards,
       handWinnerInfo: this.handWinnerInfo,
+      seatedCount: seated.length,
+      readyCount: readyCount,
+      allReady: seated.length >= 2 && readyCount === seated.length,
       seats: this.seats.map(s => {
         if (!s) return null;
         return {
@@ -523,6 +642,8 @@ class PokerEngine {
           currentBet: s.currentBet,
           folded: s.folded,
           isAllIn: s.isAllIn,
+          ready: !!s.ready,
+          inCurrentHand: !!s.inCurrentHand,
           seatIndex: s.seatIndex,
           chairId: s.chairId,
           // In showdown, cards are shown; otherwise cards hidden for opponents

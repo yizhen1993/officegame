@@ -224,6 +224,12 @@ export class NetworkManager {
     }
   }
 
+  readyPoker(ready) {
+    if (this.socket) {
+      this.socket.emit('poker_ready', { ready });
+    }
+  }
+
   pokerAction(action, amount = 0) {
     if (this.socket) {
       this.socket.emit('poker_action', { action, amount });

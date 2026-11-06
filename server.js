@@ -840,6 +840,10 @@ io.on('connection', (socket) => {
     poker.stand(socket.id);
   });
 
+  socket.on('poker_ready', (data) => {
+    poker.setReady(socket.id, data?.ready);
+  });
+
   socket.on('poker_action', (data) => {
     poker.handleAction(socket.id, data.action, data.amount);
   });
