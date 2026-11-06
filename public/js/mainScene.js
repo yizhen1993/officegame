@@ -9,6 +9,7 @@
 import { GATHER_CONFIG } from './config.js';
 import { TextureGenerator } from './textures.js';
 import { AvatarGenerator } from './avatar.js';
+import { Clamped2DCamera } from './camera.js';
 
 export class MainScene extends Phaser.Scene {
   constructor() {
@@ -37,7 +38,15 @@ export class MainScene extends Phaser.Scene {
     // 2. Setup Input Keys (WASD + Arrows + Action keys X, E, G, Z, 1-6)
     this.setupInputControls();
 
-    // 3. Setup Dynamic Mouse Wheel, Pinch, and Shortcut Zoom Controls
+    // 3. Setup Clamped 2D Game Camera & Zoom Controls
+    this.gameCamera = new Clamped2DCamera(this.cameras.main, {
+      mapWidth: GATHER_CONFIG.MAP_WIDTH_PX,
+      mapHeight: GATHER_CONFIG.MAP_HEIGHT_PX,
+      defaultZoom: 2.0,
+      minZoom: 1.0,
+      maxZoom: 2.5,
+      lerpSpeed: 0.08
+    });
     this.setupZoomControls();
 
     // 4. Emit ready event to Network Manager
@@ -373,37 +382,10 @@ export class MainScene extends Phaser.Scene {
   // ==========================================================================
   setupZoomControls() {
     this.defaultZoom = 2.0;
-    this.currentZoom = 2.0;
 
     const applyZoom = (targetZoom) => {
-      const clampedZoom = Phaser.Math.Clamp(
-        Math.round(targetZoom * 10) / 10,
-        0.8,
-        2.5
-      );
-      if (Math.abs(this.cameras.main.zoom - clampedZoom) < 0.01) return;
-
-      this.currentZoom = clampedZoom;
-      this.cameras.main.setZoom(clampedZoom);
-
-      if (clampedZoom > 1.0) {
-        if (this.localPlayer) {
-          const padX = (GATHER_CONFIG.MAP_WIDTH_PX / 2) / clampedZoom;
-          const padY = (GATHER_CONFIG.MAP_HEIGHT_PX / 2) / clampedZoom;
-          this.cameras.main.setBounds(
-            -padX,
-            -padY,
-            GATHER_CONFIG.MAP_WIDTH_PX + padX * 2,
-            GATHER_CONFIG.MAP_HEIGHT_PX + padY * 2
-          );
-          if (!this.cameras.main._follow) {
-            this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
-          }
-        }
-      } else {
-        this.cameras.main.stopFollow();
-        this.cameras.main.setBounds(0, 0, GATHER_CONFIG.MAP_WIDTH_PX, GATHER_CONFIG.MAP_HEIGHT_PX);
-        this.cameras.main.setScroll(0, 0);
+      if (this.gameCamera) {
+        this.gameCamera.setZoom(targetZoom);
       }
     };
 
@@ -413,16 +395,18 @@ export class MainScene extends Phaser.Scene {
     this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
       if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
       const step = deltaY > 0 ? -0.1 : 0.1;
-      applyZoom(this.cameras.main.zoom + step);
+      const currentZoom = this.gameCamera ? this.gameCamera.getZoom() : this.cameras.main.zoom;
+      applyZoom(currentZoom + step);
     });
 
     // 2. Keyboard Zoom Shortcuts (+ / - / 0 to reset to default)
     this.input.keyboard.on('keydown', (event) => {
       if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
+      const currentZoom = this.gameCamera ? this.gameCamera.getZoom() : this.cameras.main.zoom;
       if (event.key === '=' || event.key === '+') {
-        applyZoom(this.cameras.main.zoom + 0.1);
+        applyZoom(currentZoom + 0.1);
       } else if (event.key === '-' || event.key === '_') {
-        applyZoom(this.cameras.main.zoom - 0.1);
+        applyZoom(currentZoom - 0.1);
       } else if (event.key === '0') {
         applyZoom(this.defaultZoom);
       }
@@ -440,7 +424,7 @@ export class MainScene extends Phaser.Scene {
         const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
         if (initialPinchDist === null) {
           initialPinchDist = dist;
-          initialPinchZoom = this.cameras.main.zoom;
+          initialPinchZoom = this.gameCamera ? this.gameCamera.getZoom() : this.cameras.main.zoom;
         } else {
           const factor = dist / initialPinchDist;
           applyZoom(initialPinchZoom * factor);
@@ -484,12 +468,10 @@ export class MainScene extends Phaser.Scene {
     // Physical collisions with walls & furniture
     this.playerCollider = this.physics.add.collider(this.localPlayer, this.wallsGroup);
 
-    // Camera view default is zoomed in (2.0x) following player; user can zoom out with mouse
-    if (this.applyZoom) {
-      this.applyZoom(this.defaultZoom || 2.0);
-    } else {
-      this.cameras.main.setZoom(2.0);
-      this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
+    // Connect Clamped 2D Game Camera to follow the local player
+    if (this.gameCamera) {
+      this.gameCamera.setTarget(this.localPlayer);
+      this.gameCamera.snapToTarget();
     }
 
     // Immediately evaluate active space for initial spawn position
@@ -577,10 +559,15 @@ export class MainScene extends Phaser.Scene {
       this.handlePlayerMovement();
     }
 
-    // 3. Check Nearest Chair or Interactive Object
+    // 3. Update Clamped 2D Game Camera (centers on player and clamps to map edges)
+    if (this.gameCamera) {
+      this.gameCamera.update();
+    }
+
+    // 4. Check Nearest Chair or Interactive Object
     this.checkNearbyInteractions();
 
-    // 4. Check Current Private Space
+    // 5. Check Current Private Space
     this.updateCurrentSpace();
   }
 
