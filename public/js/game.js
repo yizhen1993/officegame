@@ -232,6 +232,10 @@ class GatherAppController {
       if (this.ui) this.ui.updateMediaScreen(media);
     });
 
+    this.network.on('media_error', (data) => {
+      if (this.ui) this.ui.showToast(`⚠️ ${data?.message || 'Invalid YouTube video'}`, '#EF4444');
+    });
+
     this.network.on('arcade_leaderboard_updated', (leaderboard) => {
       if (this.ui) this.ui.updateArcadeLeaderboard(leaderboard);
     });

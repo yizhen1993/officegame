@@ -55,6 +55,7 @@ export class NetworkManager {
     this.socket.on('whiteboard_cleared', () => this.emitLocal('whiteboard_cleared'));
     this.socket.on('notes_updated', (data) => this.emitLocal('notes_updated', data));
     this.socket.on('media_synced', (data) => this.emitLocal('media_synced', data));
+    this.socket.on('media_error', (data) => this.emitLocal('media_error', data));
     this.socket.on('arcade_leaderboard_updated', (data) => this.emitLocal('arcade_leaderboard_updated', data));
     this.socket.on('roulette_started', (data) => this.emitLocal('roulette_started', data));
     this.socket.on('roulette_finished', (data) => this.emitLocal('roulette_finished', data));

@@ -174,17 +174,42 @@ function sanitizeText(str, maxLen = 150) {
 
 function sanitizeYouTubeUrl(url) {
   if (!url || typeof url !== 'string') return null;
+  const cleanUrl = url.trim();
   let videoId = null;
-  const match1 = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+
+  // 1. Standard watch: https://www.youtube.com/watch?v=VIDEO_ID
+  const match1 = cleanUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
   if (match1) videoId = match1[1];
+
+  // 2. Short URL: https://youtu.be/VIDEO_ID
   if (!videoId) {
-    const match2 = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    const match2 = cleanUrl.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
     if (match2) videoId = match2[1];
   }
+
+  // 3. Embed URL: https://www.youtube.com/embed/VIDEO_ID
   if (!videoId) {
-    const match3 = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+    const match3 = cleanUrl.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
     if (match3) videoId = match3[1];
   }
+
+  // 4. Shorts: https://www.youtube.com/shorts/VIDEO_ID
+  if (!videoId) {
+    const match4 = cleanUrl.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+    if (match4) videoId = match4[1];
+  }
+
+  // 5. Live: https://www.youtube.com/live/VIDEO_ID
+  if (!videoId) {
+    const match5 = cleanUrl.match(/youtube\.com\/live\/([a-zA-Z0-9_-]{11})/);
+    if (match5) videoId = match5[1];
+  }
+
+  // 6. Direct 11-char video ID (e.g. jfKfPfyJRdk)
+  if (!videoId && /^[a-zA-Z0-9_-]{11}$/.test(cleanUrl)) {
+    videoId = cleanUrl;
+  }
+
   if (videoId) {
     return {
       videoId,
@@ -529,6 +554,8 @@ io.on('connection', (socket) => {
         startedAt: Date.now()
       };
       io.emit('media_synced', GATHER_OFFICE_STATE.media);
+    } else {
+      socket.emit('media_error', { message: 'Invalid YouTube link or video ID' });
     }
   });
 

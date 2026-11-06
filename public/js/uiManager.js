@@ -238,12 +238,41 @@ export class UIManager {
 
     // 12. Media Player (YouTube)
     const btnMediaApply = document.getElementById('media-btn-apply');
+    const mediaUrlInput = document.getElementById('media-url-input');
+    const mediaTitleInput = document.getElementById('media-title-input');
+
+    const handleApplyMedia = () => {
+      const url = mediaUrlInput ? mediaUrlInput.value.trim() : '';
+      const title = (mediaTitleInput ? mediaTitleInput.value.trim() : '') || 'Custom Video';
+
+      if (!url) {
+        this.showToast('⚠️ Please enter a YouTube link or video ID', '#F59E0B');
+        if (mediaUrlInput) mediaUrlInput.focus();
+        return;
+      }
+
+      this.network.changeMedia(url, title);
+      this.showToast('▶ Updating video on screen...', '#10B981');
+      if (mediaUrlInput) mediaUrlInput.value = '';
+      if (mediaTitleInput) mediaTitleInput.value = '';
+    };
+
     if (btnMediaApply) {
-      btnMediaApply.addEventListener('click', () => {
-        const url = document.getElementById('media-url-input').value.trim();
-        const title = document.getElementById('media-title-input').value.trim() || 'Custom Video';
-        if (url) {
-          this.network.changeMedia(url, title);
+      btnMediaApply.addEventListener('click', handleApplyMedia);
+    }
+    if (mediaUrlInput) {
+      mediaUrlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleApplyMedia();
+        }
+      });
+    }
+    if (mediaTitleInput) {
+      mediaTitleInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleApplyMedia();
         }
       });
     }
@@ -254,6 +283,7 @@ export class UIManager {
         const url = btn.getAttribute('data-url');
         const title = btn.getAttribute('data-title');
         this.network.changeMedia(url, title);
+        this.showToast(`▶ Switched to: ${title}`, '#10B981');
       });
     });
 
@@ -533,6 +563,10 @@ export class UIManager {
       }
       if (modalKey === 'bulletin') {
         const inp = document.getElementById('note-title-input');
+        if (inp) setTimeout(() => inp.focus(), 100);
+      }
+      if (modalKey === 'media') {
+        const inp = document.getElementById('media-url-input');
         if (inp) setTimeout(() => inp.focus(), 100);
       }
     }

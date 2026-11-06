@@ -240,13 +240,19 @@
         </div>
 
         <!-- Presets and Input -->
-        <div class="flex items-center gap-2">
-          <button class="media-preset-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200" data-url="https://www.youtube.com/watch?v=jfKfPfyJRdk" data-title="Lofi Chill Beats">🎵 Lofi Radio</button>
-          <button class="media-preset-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200" data-url="https://www.youtube.com/watch?v=4xDzrJKXOOY" data-title="Synthwave Chill">⚡ Synthwave</button>
-          <button class="media-preset-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200" data-url="https://www.youtube.com/watch?v=DXUAyRRkI6k" data-title="Deep Work Coding Music">💻 Focus Music</button>
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-2 overflow-x-auto pb-1">
+            <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap">Presets:</span>
+            <button class="media-preset-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-url="https://www.youtube.com/watch?v=jfKfPfyJRdk" data-title="Lofi Chill Beats">🎵 Lofi Radio</button>
+            <button class="media-preset-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-url="https://www.youtube.com/watch?v=4xDzrJKXOOY" data-title="Synthwave Chill">⚡ Synthwave</button>
+            <button class="media-preset-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-url="https://www.youtube.com/watch?v=DXUAyRRkI6k" data-title="Deep Work Coding Music">💻 Focus Music</button>
+          </div>
 
-          <input id="media-url-input" type="text" placeholder="Paste YouTube link..." class="flex-1 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100 placeholder-slate-500" />
-          <button id="media-btn-apply" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition">Play Video</button>
+          <div class="flex items-center gap-2">
+            <input id="media-title-input" type="text" placeholder="Title (optional)..." class="w-1/3 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+            <input id="media-url-input" type="text" placeholder="Paste YouTube link or Video ID..." class="flex-1 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+            <button id="media-btn-apply" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition whitespace-nowrap">Play Video</button>
+          </div>
         </div>
       </div>
     </div>
