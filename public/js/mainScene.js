@@ -94,10 +94,10 @@ export class MainScene extends Phaser.Scene {
       }
     }
 
-    // 2. Area Rugs
-    this.add.image(288, 992, 'floor_rug_ornate').setScale(2); // In Lounge
-    this.add.image(1328, 240, 'floor_rug_ornate').setScale(1.5); // Under Boardroom conference table in Top-Right
-    this.add.image(800, 1024, 'floor_rug_ornate').setScale(1.2); // Under Brainstorm table in South-Center
+    // 2. Area Rugs (scaled up 1.4x for bigger pixel interior)
+    this.add.image(288, 992, 'floor_rug_ornate').setScale(2 * 1.4); // In Lounge
+    this.add.image(1328, 240, 'floor_rug_ornate').setScale(1.5 * 1.4); // Under Boardroom conference table in Top-Right
+    this.add.image(800, 1024, 'floor_rug_ornate').setScale(1.2 * 1.4); // Under Brainstorm table in South-Center
 
     // 3. Perimeter Boundary Walls
     for (let x = 0; x < W; x++) {
@@ -208,10 +208,11 @@ export class MainScene extends Phaser.Scene {
     this.placeFurniture(1120, 80, 'plant_ficus', false);
     this.placeFurniture(1520, 80, 'plant_monstera', false);
 
-    // 6. Chairs Placement (with exact orientations)
+    // 6. Chairs Placement (with exact orientations, scaled 1.4x for bigger pixel interior)
     GATHER_CONFIG.CHAIRS.forEach(chair => {
       const chairTex = `chair_${chair.direction}`;
       const sprite = this.add.image(chair.x, chair.y, chairTex);
+      sprite.setScale(1.4);
       sprite.setDepth(chair.direction === 'up' ? 55 : 40);
       sprite.setData('chairId', chair.id);
       sprite.setData('direction', chair.direction);
@@ -219,7 +220,7 @@ export class MainScene extends Phaser.Scene {
       if (chair.seatIndex !== undefined) sprite.setData('seatIndex', chair.seatIndex);
     });
 
-    // 7. Interactive Objects (Kept outside wallsGroup so they never create hidden obstacles)
+    // 7. Interactive Objects (scaled 1.4x for bigger pixel interior)
     GATHER_CONFIG.INTERACTIVE_OBJECTS.forEach(obj => {
       const texKey = obj.type === 'whiteboard' ? 'obj_whiteboard' :
         obj.type === 'media' ? 'obj_projector' :
@@ -231,6 +232,7 @@ export class MainScene extends Phaser.Scene {
         obj.type === 'wheel' ? 'obj_wheel' : 'obj_whiteboard';
 
       const item = this.interactiveGroup.create(obj.x, obj.y, texKey);
+      item.setScale(1.4);
       item.setData('config', obj);
       if (typeof item.refreshBody === 'function') {
         item.refreshBody();
@@ -267,6 +269,7 @@ export class MainScene extends Phaser.Scene {
   placeFurniture(x, y, textureKey, solid = true) {
     if (solid) {
       const item = this.wallsGroup.create(x, y, textureKey);
+      item.setScale(1.4);
       // Precision hitboxes to prevent trapping players near chairs
       if (item.body) {
         if (textureKey === 'desk_workstation') {
@@ -288,7 +291,9 @@ export class MainScene extends Phaser.Scene {
       }
       return item;
     } else {
-      return this.add.image(x, y, textureKey);
+      const item = this.add.image(x, y, textureKey);
+      item.setScale(1.4);
+      return item;
     }
   }
 
@@ -464,8 +469,9 @@ export class MainScene extends Phaser.Scene {
     // Create Animations
     this.createAvatarAnimations(key);
 
-    // Physics Sprite
+    // Physics Sprite (scaled 1.4x for bigger pixel avatar)
     this.localPlayer = this.physics.add.sprite(playerData.x, playerData.y, key, 0);
+    this.localPlayer.setScale(1.4);
     this.localPlayer.setCollideWorldBounds(true);
     this.localPlayer.setSize(18, 14);
     this.localPlayer.setOffset(7, 18);
@@ -494,7 +500,7 @@ export class MainScene extends Phaser.Scene {
     const container = this.add.container(0, 0);
     container.setDepth(60);
 
-    const nameText = this.add.text(0, -22, name, {
+    const nameText = this.add.text(0, -30, name, {
       fontSize: '11px',
       fontFamily: 'Nunito, sans-serif',
       fontStyle: 'bold',
@@ -741,7 +747,7 @@ export class MainScene extends Phaser.Scene {
     // 1. If currently seated, show "[X] Stand Up"
     if (info && info.isSitting) {
       this.promptContainer.setVisible(true);
-      this.promptContainer.setPosition(px, py - 36);
+      this.promptContainer.setPosition(px, py - 46);
       this.promptText.setText('Press X to Stand Up');
       this.activeInteraction = { type: 'stand' };
       return;
@@ -753,7 +759,7 @@ export class MainScene extends Phaser.Scene {
     // 2. Check chairs
     GATHER_CONFIG.CHAIRS.forEach(chair => {
       const d = Phaser.Math.Distance.Between(px, py, chair.x, chair.y);
-      if (d < 36 && d < closestDist) {
+      if (d < 46 && d < closestDist) {
         closestDist = d;
         closestItem = {
           type: 'chair',
@@ -766,7 +772,7 @@ export class MainScene extends Phaser.Scene {
     // 3. Check interactive objects
     GATHER_CONFIG.INTERACTIVE_OBJECTS.forEach(obj => {
       const d = Phaser.Math.Distance.Between(px, py, obj.x, obj.y);
-      if (d < GATHER_CONFIG.INTERACTION_DISTANCE && d < closestDist) {
+      if (d < GATHER_CONFIG.INTERACTION_DISTANCE * 1.2 && d < closestDist) {
         closestDist = d;
         closestItem = {
           type: 'object',
@@ -779,7 +785,7 @@ export class MainScene extends Phaser.Scene {
     if (closestItem) {
       this.activeInteraction = closestItem;
       this.promptContainer.setVisible(true);
-      this.promptContainer.setPosition(px, py - 38);
+      this.promptContainer.setPosition(px, py - 48);
       this.promptText.setText(closestItem.prompt);
     } else {
       this.activeInteraction = null;
@@ -830,6 +836,7 @@ export class MainScene extends Phaser.Scene {
     this.createAvatarAnimations(key);
 
     const sprite = this.physics.add.sprite(playerData.x, playerData.y, key, 0);
+    sprite.setScale(1.4);
     sprite.setDepth(45);
     sprite.setData('info', playerData);
 
@@ -876,15 +883,15 @@ export class MainScene extends Phaser.Scene {
   // VFX: REACTION EMOTE ANIMATION
   // ==========================================================================
   spawnReactionEmote(x, y, emoji) {
-    const emoteText = this.add.text(x, y - 20, emoji, {
-      fontSize: '22px'
+    const emoteText = this.add.text(x, y - 30, emoji, {
+      fontSize: '24px'
     }).setOrigin(0.5).setDepth(150);
 
     this.tweens.add({
       targets: emoteText,
-      y: y - 70,
+      y: y - 85,
       alpha: 0,
-      scale: 1.4,
+      scale: 1.6,
       duration: 1800,
       ease: 'Power2',
       onComplete: () => emoteText.destroy()
