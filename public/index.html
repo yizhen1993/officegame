@@ -141,13 +141,18 @@
   <!-- 4. RIGHT SIDEBAR (Participants & Multi-Channel Chat) -->
   <!-- ========================================================================= -->
   <aside id="gather-sidebar" class="collapsed">
-    <!-- Tabs Header -->
-    <div class="flex items-center border-b border-slate-700/80">
-      <button class="sidebar-tab-btn active-tab" data-tab="participants">
-        👥 Participants
-      </button>
-      <button class="sidebar-tab-btn" data-tab="chat">
-        💬 Chat
+    <!-- Tabs Header with Close Button -->
+    <div class="flex items-center justify-between border-b border-slate-700/80 pr-2">
+      <div class="flex items-center flex-1">
+        <button class="sidebar-tab-btn active-tab" data-tab="participants">
+          👥 Participants
+        </button>
+        <button class="sidebar-tab-btn" data-tab="chat">
+          💬 Chat
+        </button>
+      </div>
+      <button id="btn-close-sidebar" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition text-sm font-black cursor-pointer ml-1" title="Close">
+        ✕
       </button>
     </div>
 
@@ -161,11 +166,16 @@
 
     <!-- Pane 2: Multi-channel Chat -->
     <div id="pane-chat" class="hidden flex-1 flex flex-col overflow-hidden">
-      <!-- Channel Switcher -->
-      <div class="p-2 border-b border-slate-700/80 flex items-center gap-1 overflow-x-auto">
-        <button class="chat-channel-btn active-channel" data-channel="global">Global HQ</button>
-        <button class="chat-channel-btn" data-channel="space">Current Space</button>
-        <button class="chat-channel-btn" data-channel="nearby">Nearby</button>
+      <!-- Channel Switcher with Close Button -->
+      <div class="p-2 border-b border-slate-700/80 flex items-center justify-between gap-1">
+        <div class="flex items-center gap-1 overflow-x-auto">
+          <button class="chat-channel-btn active-channel" data-channel="global">Global HQ</button>
+          <button class="chat-channel-btn" data-channel="space">Current Space</button>
+          <button class="chat-channel-btn" data-channel="nearby">Nearby</button>
+        </div>
+        <button class="btn-close-chat text-slate-400 hover:text-white px-2 py-1 rounded-lg hover:bg-slate-800 text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Close Chat">
+          ✕
+        </button>
       </div>
 
       <!-- Messages Log -->
@@ -671,6 +681,6 @@
   </div>
 
   <!-- Entry Script (ES Module with cache busting) -->
-  <script type="module" src="./js/game.js?v=3.6"></script>
+  <script type="module" src="./js/game.js?v=3.7"></script>
 </body>
 </html>

@@ -210,12 +210,25 @@ export class UIManager {
       });
     });
 
-    // 8. Sidebar Toggle Collapse
+    // 8. Sidebar Toggle Collapse & Close
     if (this.btnToggleSidebar) {
       this.btnToggleSidebar.addEventListener('click', () => {
         this.sidebar.classList.toggle('collapsed');
       });
     }
+
+    const btnCloseSidebar = document.getElementById('btn-close-sidebar');
+    if (btnCloseSidebar) {
+      btnCloseSidebar.addEventListener('click', () => {
+        this.sidebar.classList.add('collapsed');
+      });
+    }
+
+    document.querySelectorAll('.btn-close-chat').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.sidebar.classList.add('collapsed');
+      });
+    });
 
     // 9. Close Modal Buttons
     document.querySelectorAll('.btn-close-modal').forEach(btn => {

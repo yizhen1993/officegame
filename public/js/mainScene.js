@@ -367,8 +367,8 @@ export class MainScene extends Phaser.Scene {
   // DYNAMIC CAMERA ZOOM CONTROLS (Mouse Wheel, Pinch, Keyboard Shortcuts)
   // ==========================================================================
   setupZoomControls() {
-    this.defaultZoom = 1.4;
-    this.currentZoom = 1.4;
+    this.defaultZoom = 2.0;
+    this.currentZoom = 2.0;
 
     const applyZoom = (targetZoom) => {
       const clampedZoom = Phaser.Math.Clamp(
@@ -478,11 +478,11 @@ export class MainScene extends Phaser.Scene {
     // Physical collisions with walls & furniture
     this.playerCollider = this.physics.add.collider(this.localPlayer, this.wallsGroup);
 
-    // Camera view default is zoomed in (1.4x) following player; user can zoom out with mouse
+    // Camera view default is zoomed in (2.0x) following player; user can zoom out with mouse
     if (this.applyZoom) {
-      this.applyZoom(this.defaultZoom || 1.4);
+      this.applyZoom(this.defaultZoom || 2.0);
     } else {
-      this.cameras.main.setZoom(1.4);
+      this.cameras.main.setZoom(2.0);
       this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
     }
 
