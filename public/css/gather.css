@@ -90,6 +90,25 @@ body {
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
 }
 
+.gather-music-pill {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gather-music-pill:hover {
+  border-color: rgba(244, 63, 94, 0.5);
+  box-shadow: 0 4px 25px rgba(244, 63, 94, 0.2);
+}
+
 #top-video-carousel {
   pointer-events: auto;
   display: flex;

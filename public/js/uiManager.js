@@ -53,6 +53,17 @@ export class UIManager {
     this.spaceBannerDetail = document.getElementById('hud-space-detail');
     this.onlineCountBadge = document.getElementById('hud-online-count');
 
+    // Top Live Music Pill
+    this.musicPill = document.getElementById('hud-music-pill');
+    this.musicTitle = document.getElementById('hud-music-title');
+    this.musicMuteBtn = document.getElementById('hud-music-mute-btn');
+    this.musicMuteIcon = document.getElementById('hud-music-mute-icon');
+    this.musicIcon = document.getElementById('hud-music-icon');
+    this.musicInfoBtn = document.getElementById('hud-music-info-btn');
+    this.musicIconBtn = document.getElementById('hud-music-icon-btn');
+    this.isMusicMuted = false;
+    this.currentMedia = null;
+
     // Bottom Dock Buttons
     this.btnMic = document.getElementById('dock-btn-mic');
     this.btnCam = document.getElementById('dock-btn-cam');
@@ -386,6 +397,40 @@ export class UIManager {
 
     // 16. Avatar Studio Customizer Live Updates
     this.setupAvatarStudioListeners();
+
+    // 17. Live Playlist Track HUD Controls (Mute / Unmute & Quick Player Modal)
+    if (this.musicMuteBtn) {
+      this.musicMuteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleMusicMute();
+      });
+    }
+
+    if (this.musicInfoBtn) {
+      this.musicInfoBtn.addEventListener('click', () => {
+        this.openModal('media');
+      });
+    }
+
+    if (this.musicIconBtn) {
+      this.musicIconBtn.addEventListener('click', () => {
+        this.openModal('media');
+      });
+    }
+
+    // Unmute / autoplay unlock on first user gesture (satisfies modern browser autoplay policy)
+    const unlockAudio = () => {
+      if (!this.isMusicMuted) {
+        this.sendIframeCommand('bg-music-iframe', 'unMute');
+        this.sendIframeCommand('bg-music-iframe', 'playVideo');
+      }
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+    window.addEventListener('click', unlockAudio, { once: true });
+    window.addEventListener('keydown', unlockAudio, { once: true });
+    window.addEventListener('touchstart', unlockAudio, { once: true });
   }
 
   // ==========================================================================
@@ -925,14 +970,81 @@ export class UIManager {
     });
   }
 
+  sendIframeCommand(iframeId, func, args = '') {
+    const iframe = document.getElementById(iframeId);
+    if (iframe && iframe.contentWindow) {
+      try {
+        iframe.contentWindow.postMessage(JSON.stringify({
+          event: 'command',
+          func: func,
+          args: args
+        }), '*');
+      } catch (e) {
+        console.warn(`[IFrame Audio] Command ${func} failed:`, e);
+      }
+    }
+  }
+
+  toggleMusicMute() {
+    this.isMusicMuted = !this.isMusicMuted;
+    if (this.isMusicMuted) {
+      this.sendIframeCommand('bg-music-iframe', 'mute');
+      this.sendIframeCommand('projector-iframe', 'mute');
+      if (this.musicMuteIcon) this.musicMuteIcon.textContent = '🔇';
+      if (this.musicMuteBtn) {
+        this.musicMuteBtn.classList.add('bg-rose-900/60', 'text-rose-300', 'border-rose-500/50');
+        this.musicMuteBtn.title = 'Unmute Music';
+      }
+      if (this.musicIcon) this.musicIcon.classList.remove('animate-pulse');
+      this.showToast('🔇 Office music muted', '#64748B');
+    } else {
+      this.sendIframeCommand('bg-music-iframe', 'unMute');
+      this.sendIframeCommand('bg-music-iframe', 'playVideo');
+      this.sendIframeCommand('projector-iframe', 'unMute');
+      this.sendIframeCommand('projector-iframe', 'playVideo');
+      if (this.musicMuteIcon) this.musicMuteIcon.textContent = '🔊';
+      if (this.musicMuteBtn) {
+        this.musicMuteBtn.classList.remove('bg-rose-900/60', 'text-rose-300', 'border-rose-500/50');
+        this.musicMuteBtn.title = 'Mute Music';
+      }
+      if (this.musicIcon) this.musicIcon.classList.add('animate-pulse');
+      this.showToast('🔊 Office music playing', '#10B981');
+    }
+  }
+
   updateMediaScreen(media) {
+    if (!media) return;
+    this.currentMedia = media;
     const iframe = document.getElementById('projector-iframe');
     const titleEl = document.getElementById('projector-title');
-    if (iframe && media.embedUrl) {
-      iframe.src = media.embedUrl;
+    const bgIframe = document.getElementById('bg-music-iframe');
+
+    const cleanTitle = (media.title || 'lofi hip hop radio - beats to relax/study to').replace(/^▶\s*/, '');
+
+    // 1. Update Projector modal title and Top HUD live playlist track title
+    if (titleEl) {
+      titleEl.textContent = `▶ ${cleanTitle} (Shared by ${media.setBy || 'Office Radio'})`;
     }
-    if (titleEl && media.title) {
-      titleEl.textContent = `▶ ${media.title} (Shared by ${media.setBy})`;
+    if (this.musicTitle) {
+      this.musicTitle.textContent = cleanTitle;
+      this.musicTitle.title = cleanTitle;
+    }
+
+    // 2. Update background radio stream iframe
+    const muteParam = this.isMusicMuted ? 1 : 0;
+    const videoId = media.videoId || 'jfKfPfyJRdk';
+    const bgEmbedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=${muteParam}&loop=1&playlist=${videoId}&controls=0`;
+    if (bgIframe) {
+      bgIframe.src = bgEmbedUrl;
+    }
+
+    // 3. Update projector modal iframe
+    if (iframe && media.embedUrl) {
+      let modalEmbedUrl = media.embedUrl;
+      if (!modalEmbedUrl.includes('enablejsapi=1')) {
+        modalEmbedUrl += (modalEmbedUrl.includes('?') ? '&' : '?') + 'enablejsapi=1';
+      }
+      iframe.src = modalEmbedUrl;
     }
   }
 

@@ -167,23 +167,6 @@ export class MainScene extends Phaser.Scene {
       }
     }
 
-    // 4F. Texas Hold'em Poker Club Partitions (Bottom-Center)
-    // Left divider (matching Lounge right wall with doorway at y: 28..30)
-    for (let y = 27; y <= 36; y++) {
-      if (y < 28 || y > 30) {
-        this.placeWall(17 * T + T / 2, y * T + T / 2, 'wall_glass');
-      }
-    }
-    // Right divider (matching Cafeteria left wall with doorway at y: 28..30)
-    for (let y = 27; y <= 36; y++) {
-      if (y < 28 || y > 30) {
-        this.placeWall(33 * T + T / 2, y * T + T / 2, 'wall_glass');
-      }
-    }
-    // Top entrance pillars at x=18 and x=32 - leaving the entire hallway (x: 19..31) completely open into Poker room
-    this.placeWall(18 * T + T / 2, 26 * T + T / 2, 'wall_glass');
-    this.placeWall(32 * T + T / 2, 26 * T + T / 2, 'wall_glass');
-
     // 5. Furniture Placement
     // 5A. Boardroom Conference Table
     this.placeFurniture(240, 240, 'boardroom_table_piece', true);
@@ -212,8 +195,8 @@ export class MainScene extends Phaser.Scene {
     this.placeFurniture(1296, 928, 'coffee_table', true);
     this.placeFurniture(1296, 1056, 'coffee_table', true);
 
-    // 5G. Kosmi Texas Hold'em Poker Table
-    this.placeFurniture(800, 1024, 'poker_table_felt', true);
+    // 5G. Kosmi Texas Hold'em Poker Table (Passable so all 6 seats and south area are completely accessible)
+    this.placeFurniture(800, 1024, 'poker_table_felt', false);
 
     // 5H. Office Plants (Passable so no corner traps)
     this.placeFurniture(80, 80, 'plant_ficus', false);

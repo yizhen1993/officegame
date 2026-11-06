@@ -33,21 +33,44 @@
   <!-- 2. TOP FLOATING HUD & VIDEO CAROUSEL -->
   <!-- ========================================================================= -->
   <header id="top-hud-bar">
-    <!-- Left: Private Space Status Pill -->
-    <div id="hud-space-pill" class="gather-space-pill">
-      <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-400 flex items-center justify-center text-base">
-        <span>🏢</span>
+    <!-- Left: Private Space Status Pill & Live Playlist Music Pill -->
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <div id="hud-space-pill" class="gather-space-pill">
+        <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-400 flex items-center justify-center text-base">
+          <span>🏢</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="hud-space-title" class="text-xs font-black text-slate-100">🌐 Open Office Hallway</span>
+            <span id="hud-online-count" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">
+              1 Online
+            </span>
+          </div>
+          <div id="hud-space-detail" class="text-[10px] text-slate-400 font-medium">
+            Proximity Audio (2-3m)
+          </div>
+        </div>
       </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <span id="hud-space-title" class="text-xs font-black text-slate-100">🌐 Open Office Hallway</span>
-          <span id="hud-online-count" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">
-            1 Online
+
+      <!-- Live Music & Radio Track Pill with Mute Option -->
+      <div id="hud-music-pill" class="gather-music-pill">
+        <div class="w-7 h-7 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-xs text-rose-400 cursor-pointer" id="hud-music-icon-btn" title="Open Media & Live Radio Player">
+          <span id="hud-music-icon" class="animate-pulse">📻</span>
+        </div>
+        <div class="flex flex-col min-w-[90px] max-w-[210px] cursor-pointer" id="hud-music-info-btn" title="Click to view live stream & radio player">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[9px] font-black uppercase tracking-wider text-rose-400 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+              LIVE PLAYLIST
+            </span>
+          </div>
+          <span id="hud-music-title" class="text-[11px] font-bold text-slate-200 truncate hover:text-white transition">
+            lofi hip hop radio - beats to relax/study to
           </span>
         </div>
-        <div id="hud-space-detail" class="text-[10px] text-slate-400 font-medium">
-          Proximity Audio (2-3m)
-        </div>
+        <button id="hud-music-mute-btn" class="w-7 h-7 rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-600/60 text-slate-200 hover:text-white transition flex items-center justify-center text-xs" title="Mute / Unmute Music">
+          <span id="hud-music-mute-icon">🔊</span>
+        </button>
       </div>
     </div>
 
@@ -236,7 +259,7 @@
       <div class="p-4 flex flex-col gap-3">
         <!-- Video Iframe -->
         <div class="aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-lg">
-          <iframe id="projector-iframe" width="100%" height="100%" src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&controls=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <iframe id="projector-iframe" width="100%" height="100%" src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&controls=1&enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
 
         <!-- Presets and Input -->
@@ -598,7 +621,12 @@
     </div>
   </div>
 
-  <!-- Entry Script (ES Module) -->
-  <script type="module" src="./js/game.js"></script>
+  <!-- Hidden Background Office Live Radio Stream -->
+  <div id="bg-audio-host" class="fixed -bottom-96 -right-96 w-1 h-1 opacity-0 pointer-events-none overflow-hidden" aria-hidden="true">
+    <iframe id="bg-music-iframe" width="200" height="200" src="https://www.youtube.com/embed/jfKfPfyJRdk?enablejsapi=1&autoplay=1&mute=0&loop=1&playlist=jfKfPfyJRdk&controls=0" frameborder="0" allow="autoplay; encrypted-media"></iframe>
+  </div>
+
+  <!-- Entry Script (ES Module with cache busting) -->
+  <script type="module" src="./js/game.js?v=2.2"></script>
 </body>
 </html>

@@ -114,7 +114,7 @@ const GATHER_OFFICE_STATE = {
   media: {
     videoId: 'jfKfPfyJRdk',
     title: 'lofi hip hop radio 📚 - beats to relax/study to',
-    embedUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&loop=1&playlist=jfKfPfyJRdk&controls=1',
+    embedUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&loop=1&playlist=jfKfPfyJRdk&controls=1&enablejsapi=1',
     playing: true,
     setBy: 'System',
     startedAt: Date.now()
@@ -216,7 +216,7 @@ function sanitizeYouTubeUrl(url) {
   if (videoId) {
     return {
       videoId,
-      embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=1`
+      embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&controls=1&enablejsapi=1`
     };
   }
   return null;
