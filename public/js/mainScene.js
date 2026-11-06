@@ -37,7 +37,10 @@ export class MainScene extends Phaser.Scene {
     // 2. Setup Input Keys (WASD + Arrows + Action keys X, E, G, Z, 1-6)
     this.setupInputControls();
 
-    // 3. Emit ready event to Network Manager
+    // 3. Setup Dynamic Mouse Wheel, Pinch, and Shortcut Zoom Controls
+    this.setupZoomControls();
+
+    // 4. Emit ready event to Network Manager
     if (window.GatherApp && window.GatherApp.onSceneReady) {
       window.GatherApp.onSceneReady(this);
     }
@@ -357,6 +360,90 @@ export class MainScene extends Phaser.Scene {
         if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
         if (window.GatherApp) window.GatherApp.sendReaction(EMOTE_MAP[keyName]);
       });
+    });
+  }
+
+  // ==========================================================================
+  // DYNAMIC CAMERA ZOOM CONTROLS (Mouse Wheel, Pinch, Keyboard Shortcuts)
+  // ==========================================================================
+  setupZoomControls() {
+    this.currentZoom = 1.0;
+
+    const applyZoom = (targetZoom) => {
+      const clampedZoom = Phaser.Math.Clamp(
+        Math.round(targetZoom * 10) / 10,
+        1.0,
+        2.5
+      );
+      if (Math.abs(this.cameras.main.zoom - clampedZoom) < 0.01) return;
+
+      this.currentZoom = clampedZoom;
+      this.cameras.main.setZoom(clampedZoom);
+
+      if (clampedZoom > 1.0) {
+        if (this.localPlayer) {
+          const padX = (GATHER_CONFIG.MAP_WIDTH_PX / 2) / clampedZoom;
+          const padY = (GATHER_CONFIG.MAP_HEIGHT_PX / 2) / clampedZoom;
+          this.cameras.main.setBounds(
+            -padX,
+            -padY,
+            GATHER_CONFIG.MAP_WIDTH_PX + padX * 2,
+            GATHER_CONFIG.MAP_HEIGHT_PX + padY * 2
+          );
+          this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
+        }
+      } else {
+        this.cameras.main.stopFollow();
+        this.cameras.main.setBounds(0, 0, GATHER_CONFIG.MAP_WIDTH_PX, GATHER_CONFIG.MAP_HEIGHT_PX);
+        this.cameras.main.setScroll(0, 0);
+      }
+    };
+
+    this.applyZoom = applyZoom;
+
+    // 1. Dynamic Mouse Wheel Zoom (Scroll Up = Zoom In, Scroll Down = Zoom Out)
+    this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+      if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
+      const step = deltaY > 0 ? -0.1 : 0.1;
+      applyZoom(this.cameras.main.zoom + step);
+    });
+
+    // 2. Keyboard Zoom Shortcuts (+ / - / 0 to reset)
+    this.input.keyboard.on('keydown', (event) => {
+      if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
+      if (event.key === '=' || event.key === '+') {
+        applyZoom(this.cameras.main.zoom + 0.1);
+      } else if (event.key === '-' || event.key === '_') {
+        applyZoom(this.cameras.main.zoom - 0.1);
+      } else if (event.key === '0') {
+        applyZoom(1.0);
+      }
+    });
+
+    // 3. Touch Pinch-to-Zoom (for mobile / tablet)
+    let initialPinchDist = null;
+    let initialPinchZoom = 1.0;
+
+    this.input.on('pointermove', () => {
+      const p1 = this.input.pointer1;
+      const p2 = this.input.pointer2;
+
+      if (p1 && p2 && p1.isDown && p2.isDown) {
+        const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+        if (initialPinchDist === null) {
+          initialPinchDist = dist;
+          initialPinchZoom = this.cameras.main.zoom;
+        } else {
+          const factor = dist / initialPinchDist;
+          applyZoom(initialPinchZoom * factor);
+        }
+      } else {
+        initialPinchDist = null;
+      }
+    });
+
+    this.input.on('pointerup', () => {
+      initialPinchDist = null;
     });
   }
 
