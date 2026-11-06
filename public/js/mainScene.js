@@ -390,7 +390,7 @@ export class MainScene extends Phaser.Scene {
     this.cameras.main.setZoom(1.2);
 
     // Immediately evaluate active space for initial spawn position
-    this.updateActiveSpace();
+    this.updateCurrentSpace();
   }
 
   createPlayerHUD(name, status) {
@@ -716,6 +716,10 @@ export class MainScene extends Phaser.Scene {
         window.GatherApp.onSpaceChanged(detectedSpace, GATHER_CONFIG.SPACES[detectedSpace]);
       }
     }
+  }
+
+  updateActiveSpace() {
+    this.updateCurrentSpace();
   }
 
   // ==========================================================================
