@@ -168,15 +168,21 @@ export class MainScene extends Phaser.Scene {
     }
 
     // 4F. Texas Hold'em Poker Club Partitions (Bottom-Center)
-    for (let x = 18; x <= 32; x++) {
-      if (x < 22 || x > 28) { // Grand 7-tile entrance archway at x: 22..28
-        this.placeWall(x * T + T / 2, 26 * T + T / 2, 'wall_glass');
+    // Left divider (matching Lounge right wall with doorway at y: 28..30)
+    for (let y = 27; y <= 36; y++) {
+      if (y < 28 || y > 30) {
+        this.placeWall(17 * T + T / 2, y * T + T / 2, 'wall_glass');
       }
     }
+    // Right divider (matching Cafeteria left wall with doorway at y: 28..30)
     for (let y = 27; y <= 36; y++) {
-      this.placeWall(17 * T + T / 2, y * T + T / 2, 'wall_glass');
-      this.placeWall(33 * T + T / 2, y * T + T / 2, 'wall_glass');
+      if (y < 28 || y > 30) {
+        this.placeWall(33 * T + T / 2, y * T + T / 2, 'wall_glass');
+      }
     }
+    // Top entrance pillars at x=18 and x=32 - leaving the entire hallway (x: 19..31) completely open into Poker room
+    this.placeWall(18 * T + T / 2, 26 * T + T / 2, 'wall_glass');
+    this.placeWall(32 * T + T / 2, 26 * T + T / 2, 'wall_glass');
 
     // 5. Furniture Placement
     // 5A. Boardroom Conference Table
@@ -214,8 +220,6 @@ export class MainScene extends Phaser.Scene {
     this.placeFurniture(464, 80, 'plant_monstera', false);
     this.placeFurniture(1120, 80, 'plant_ficus', false);
     this.placeFurniture(1520, 80, 'plant_monstera', false);
-    this.placeFurniture(752, 992, 'plant_ficus', false);
-    this.placeFurniture(848, 992, 'plant_ficus', false);
 
     // 6. Chairs Placement (with exact orientations)
     GATHER_CONFIG.CHAIRS.forEach(chair => {
@@ -270,7 +274,6 @@ export class MainScene extends Phaser.Scene {
 
   placeWall(x, y, textureKey) {
     const wall = this.wallsGroup.create(x, y, textureKey);
-    wall.refreshBody();
     return wall;
   }
 
@@ -278,24 +281,23 @@ export class MainScene extends Phaser.Scene {
     if (solid) {
       const item = this.wallsGroup.create(x, y, textureKey);
       // Precision hitboxes to prevent trapping players near chairs
-      if (textureKey === 'desk_workstation') {
-        item.setSize(56, 16);
-        item.setOffset(4, 8);
-      } else if (textureKey === 'boardroom_table_piece') {
-        item.setSize(56, 18);
-        item.setOffset(4, 7);
-      } else if (textureKey === 'round_collab_table') {
-        item.setSize(34, 34);
-        item.setOffset(7, 7);
-      } else if (textureKey === 'poker_table_felt') {
-        item.setSize(80, 36);
-        item.setOffset(16, 14);
-      } else if (textureKey === 'coffee_table') {
-        item.setSize(30, 14);
-        item.setOffset(5, 5);
-      }
-      if (typeof item.refreshBody === 'function') {
-        item.refreshBody();
+      if (item.body) {
+        if (textureKey === 'desk_workstation') {
+          item.body.setSize(56, 16);
+          item.body.setOffset(4, 8);
+        } else if (textureKey === 'boardroom_table_piece') {
+          item.body.setSize(56, 18);
+          item.body.setOffset(4, 7);
+        } else if (textureKey === 'round_collab_table') {
+          item.body.setSize(34, 34);
+          item.body.setOffset(7, 7);
+        } else if (textureKey === 'poker_table_felt') {
+          item.body.setSize(80, 36);
+          item.body.setOffset(16, 14);
+        } else if (textureKey === 'coffee_table') {
+          item.body.setSize(30, 14);
+          item.body.setOffset(5, 5);
+        }
       }
       return item;
     } else {

@@ -645,11 +645,11 @@ export class UIManager {
         // In private space: only connect if in the exact same space
         isConnected = (player.activeSpace === selfSpace);
       } else {
-        // In open office: connect if within proximity distance (~220px)
+        // In open office: connect if within proximity distance (~320px)
         const dx = player.x - selfX;
         const dy = player.y - selfY;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        isConnected = (dist <= 240);
+        isConnected = (dist <= 320);
       }
 
       if (isConnected) {
@@ -657,9 +657,16 @@ export class UIManager {
         this.videoGridContainer.appendChild(tile);
 
         // Auto-negotiate WebRTC connection with nearby peers
-        if (this.webrtc && !this.webrtc.peers.has(player.id)) {
-          const isInitiator = (this.localPlayerState.id < player.id);
-          this.webrtc.connectToPeer(player.id, isInitiator);
+        if (this.webrtc) {
+          if (!this.webrtc.peers.has(player.id)) {
+            const isInitiator = (this.localPlayerState.id < player.id);
+            this.webrtc.connectToPeer(player.id, isInitiator);
+          } else {
+            const peer = this.webrtc.peers.get(player.id);
+            if (peer && peer.remoteStream) {
+              this.webrtc.attachRemoteMedia(player.id, peer.remoteStream);
+            }
+          }
         }
       } else {
         // Disconnect WebRTC peer if player went out of range or to another room
@@ -698,8 +705,11 @@ export class UIManager {
         `;
         setTimeout(() => {
           const vid = card.querySelector('#self-video-stream');
-          if (vid && this.webrtc?.localStream) {
-            vid.srcObject = this.webrtc.localStream;
+          const stream = (this.webrtc?.isScreenSharing && this.webrtc?.screenStream)
+            ? this.webrtc.screenStream
+            : this.webrtc?.localStream;
+          if (vid && stream) {
+            vid.srcObject = stream;
             vid.play().catch(() => {});
           }
         }, 10);

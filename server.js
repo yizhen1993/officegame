@@ -361,8 +361,8 @@ io.on('connection', (socket) => {
     id: socket.id,
     name: defaultSetup.name,
     avatar: defaultSetup.avatar,
-    x: 800, // Center of Reception/Main Hallway
-    y: 980,
+    x: 800, // Center of Open Office / Hallway
+    y: 600,
     direction: 'down',
     anim: 'idle',
     isSitting: false,

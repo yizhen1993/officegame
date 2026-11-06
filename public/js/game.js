@@ -409,7 +409,8 @@ class GatherAppController {
       'modal-arcade': 'arcade',
       'modal-bulletin': 'bulletin',
       'modal-coffee': 'coffee',
-      'modal-wheel': 'wheel'
+      'modal-wheel': 'wheel',
+      'modal-poker': 'poker'
     };
     const key = keyMap[modalId] || modalId;
     this.ui.openModal(key, objConfig);
