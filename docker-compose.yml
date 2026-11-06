@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  office2-app:
+    build: .
+    container_name: office2-app
+    restart: unless-stopped
+    ports:
+      - "3009:3000"
+    volumes:
+      - ./public:/app/public
+      - ./server.js:/app/server.js
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    networks:
+      - kopipeng-net
+
+networks:
+  kopipeng-net:
+    external: true

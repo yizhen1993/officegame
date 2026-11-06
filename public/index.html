@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gather.town v2 — Virtual Office</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Nunito & Quicksand -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Phaser 3 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+
+  <!-- Socket.io Client -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Gather v2 Sleek Dark CSS -->
+  <link rel="stylesheet" href="./css/gather.css">
+</head>
+<body class="relative w-screen h-screen overflow-hidden text-slate-100 bg-slate-950">
+
+  <!-- ========================================================================= -->
+  <!-- 1. PHASER 3 GAME CONTAINER -->
+  <!-- ========================================================================= -->
+  <div id="phaser-container"></div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. TOP FLOATING HUD & VIDEO CAROUSEL -->
+  <!-- ========================================================================= -->
+  <header id="top-hud-bar">
+    <!-- Left: Private Space Status Pill -->
+    <div id="hud-space-pill" class="gather-space-pill">
+      <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-400 flex items-center justify-center text-base">
+        <span>🏢</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span id="hud-space-title" class="text-xs font-black text-slate-100">🌐 Open Office Hallway</span>
+          <span id="hud-online-count" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/30">
+            1 Online
+          </span>
+        </div>
+        <div id="hud-space-detail" class="text-[10px] text-slate-400 font-medium">
+          Proximity Audio (2-3m)
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Horizontal Video Tiles Carousel -->
+    <div id="top-video-carousel"></div>
+
+    <!-- Right: Sidebar Toggle Button -->
+    <button id="btn-toggle-sidebar" class="pointer-events-auto p-2.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 border border-slate-700 backdrop-blur-md shadow-lg transition">
+      <span class="text-sm">💬 / 👥</span>
+    </button>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 3. GATHER V2 BOTTOM DOCK -->
+  <!-- ========================================================================= -->
+  <nav id="gather-dock">
+    <!-- User Profile Badge -->
+    <div class="flex items-center gap-2.5 pr-2 border-r border-slate-700/80 cursor-pointer" id="dock-btn-avatar">
+      <div id="dock-user-avatar-circle" class="w-8 h-8 rounded-full bg-indigo-600 border border-indigo-400 flex items-center justify-center text-xs font-black shadow">
+        U
+      </div>
+      <div class="flex flex-col text-left">
+        <span id="dock-user-name" class="text-xs font-black text-slate-100">User</span>
+        <span id="dock-user-status" class="text-[10px] text-slate-400 font-medium">💬 Available</span>
+      </div>
+    </div>
+
+    <!-- AV Controls (Mic, Cam, Screen) -->
+    <div class="flex items-center gap-1.5 pr-2 border-r border-slate-700/80">
+      <button id="dock-btn-mic" class="gather-dock-btn" title="Toggle Microphone">
+        <span class="dock-icon">🔇</span>
+        <span class="text-xs hidden sm:inline">Mic</span>
+      </button>
+      <button id="dock-btn-cam" class="gather-dock-btn" title="Toggle Camera">
+        <span class="dock-icon">🚫</span>
+        <span class="text-xs hidden sm:inline">Cam</span>
+      </button>
+      <button id="dock-btn-screen" class="gather-dock-btn" title="Screen Share">
+        <span class="dock-icon">🖥️</span>
+        <span class="text-xs hidden sm:inline">Share</span>
+      </button>
+    </div>
+
+    <!-- Gather Reactions & Emote Bar -->
+    <div class="flex items-center gap-1 pr-2 border-r border-slate-700/80">
+      <button class="dock-emote-btn" data-emote="👋" title="Press 1: Wave">👋</button>
+      <button class="dock-emote-btn" data-emote="❤️" title="Press 2: Heart">❤️</button>
+      <button class="dock-emote-btn" data-emote="👍" title="Press 3: Thumbs Up">👍</button>
+      <button class="dock-emote-btn" data-emote="😂" title="Press 4: Laugh">😂</button>
+      <button class="dock-emote-btn" data-emote="👏" title="Press 5: Clapping">👏</button>
+      <button class="dock-emote-btn" data-emote="❓" title="Press 6: Question">❓</button>
+    </div>
+
+    <!-- Special Action Buttons (Dance, Ghost, Avatar) -->
+    <div class="flex items-center gap-1.5">
+      <button id="dock-btn-dance" class="gather-dock-btn" title="Dance (Z key)">
+        <span>🎉</span>
+        <span class="text-xs hidden md:inline">Dance</span>
+      </button>
+      <button id="dock-btn-ghost" class="gather-dock-btn" title="Ghost Mode (G key) to pass through people">
+        <span>👻</span>
+        <span class="text-xs hidden md:inline">Ghost</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========================================================================= -->
+  <!-- 4. RIGHT SIDEBAR (Participants & Multi-Channel Chat) -->
+  <!-- ========================================================================= -->
+  <aside id="gather-sidebar" class="collapsed">
+    <!-- Tabs Header -->
+    <div class="flex items-center border-b border-slate-700/80">
+      <button class="sidebar-tab-btn active-tab" data-tab="participants">
+        👥 Participants
+      </button>
+      <button class="sidebar-tab-btn" data-tab="chat">
+        💬 Chat
+      </button>
+    </div>
+
+    <!-- Pane 1: Participants List -->
+    <div id="pane-participants" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1">
+      <div class="text-[11px] font-bold text-slate-400 px-1 mb-1">
+        Colleagues in this office
+      </div>
+      <div id="participants-list-container" class="flex flex-col gap-1"></div>
+    </div>
+
+    <!-- Pane 2: Multi-channel Chat -->
+    <div id="pane-chat" class="hidden flex-1 flex flex-col overflow-hidden">
+      <!-- Channel Switcher -->
+      <div class="p-2 border-b border-slate-700/80 flex items-center gap-1 overflow-x-auto">
+        <button class="chat-channel-btn active-channel" data-channel="global">Global HQ</button>
+        <button class="chat-channel-btn" data-channel="space">Current Space</button>
+        <button class="chat-channel-btn" data-channel="nearby">Nearby</button>
+      </div>
+
+      <!-- Messages Log -->
+      <div id="chat-messages-log" class="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
+        <div class="text-slate-400 text-[11px] italic text-center py-2">
+          🍃 Welcome to Gather.town v2 Office!
+        </div>
+      </div>
+
+      <!-- Chat Input Field -->
+      <div class="p-2 border-t border-slate-700/80 flex items-center gap-2">
+        <input 
+          id="chat-input-field" 
+          type="text" 
+          placeholder="Message Global HQ..." 
+          class="flex-1 bg-slate-800/80 text-xs text-slate-100 px-3 py-2 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 placeholder-slate-500"
+          maxlength="120"
+        />
+        <button id="btn-send-chat" class="p-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition">
+          ➤
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- 5. INTERACTIVE MODALS -->
+  <!-- ========================================================================= -->
+
+  <!-- Modal 1: Interactive Whiteboard -->
+  <div id="modal-whiteboard" class="gather-modal-backdrop hidden">
+    <div class="gather-modal-card w-[920px]">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">🎨</span>
+          <div>
+            <h3 class="font-black text-sm text-slate-100">Collaborative Whiteboard</h3>
+            <p class="text-[11px] text-slate-400">Real-time synchronized drawing canvas</p>
+          </div>
+        </div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <button class="wb-tool-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-200 active-tool" data-tool="pen">✏️ Pen</button>
+          <button class="wb-tool-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-200" data-tool="highlighter">🖍️ Highlighter</button>
+          <button class="wb-tool-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-200" data-tool="eraser">🧹 Eraser</button>
+
+          <span class="h-4 w-px bg-slate-700 mx-1"></span>
+
+          <!-- Colors -->
+          <div class="flex items-center gap-1.5">
+            <button class="wb-color-swatch w-5 h-5 rounded-full bg-slate-950 ring-2 ring-indigo-500" data-color="#0F172A"></button>
+            <button class="wb-color-swatch w-5 h-5 rounded-full bg-indigo-600" data-color="#4F46E5"></button>
+            <button class="wb-color-swatch w-5 h-5 rounded-full bg-emerald-500" data-color="#10B981"></button>
+            <button class="wb-color-swatch w-5 h-5 rounded-full bg-amber-500" data-color="#F59E0B"></button>
+            <button class="wb-color-swatch w-5 h-5 rounded-full bg-rose-500" data-color="#EF4444"></button>
+            <button class="wb-color-swatch w-5 h-5 rounded-full bg-cyan-500" data-color="#06B6D4"></button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="wb-btn-clear" class="px-3 py-1 rounded-lg text-xs font-bold bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800/60 transition">Clear</button>
+          <button id="wb-btn-download" class="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition">Export PNG</button>
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="p-4 bg-slate-900/50 flex justify-center">
+        <canvas id="whiteboard-canvas" width="860" height="500" class="bg-white rounded-xl shadow-inner cursor-crosshair"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Presentation / Media Player -->
+  <div id="modal-media" class="gather-modal-backdrop hidden">
+    <div class="gather-modal-card w-[860px]">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">📺</span>
+          <div>
+            <h3 id="projector-title" class="font-black text-sm text-slate-100">Presentation Projector</h3>
+            <p class="text-[11px] text-slate-400">Shared room video stream</p>
+          </div>
+        </div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="p-4 flex flex-col gap-3">
+        <!-- Video Iframe -->
+        <div class="aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-lg">
+          <iframe id="projector-iframe" width="100%" height="100%" src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&controls=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
+        <!-- Presets and Input -->
+        <div class="flex items-center gap-2">
+          <button class="media-preset-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200" data-url="https://www.youtube.com/watch?v=jfKfPfyJRdk" data-title="Lofi Chill Beats">🎵 Lofi Radio</button>
+          <button class="media-preset-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200" data-url="https://www.youtube.com/watch?v=4xDzrJKXOOY" data-title="Synthwave Chill">⚡ Synthwave</button>
+          <button class="media-preset-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200" data-url="https://www.youtube.com/watch?v=DXUAyRRkI6k" data-title="Deep Work Coding Music">💻 Focus Music</button>
+
+          <input id="media-url-input" type="text" placeholder="Paste YouTube link..." class="flex-1 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100 placeholder-slate-500" />
+          <button id="media-btn-apply" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition">Play Video</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Retro Arcade Game -->
+  <div id="modal-arcade" class="gather-modal-backdrop hidden">
+    <div class="gather-modal-card w-[700px]">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">🕹️</span>
+          <div>
+            <h3 class="font-black text-sm text-slate-100">Gather Retro Arcade — Snake Classic</h3>
+            <p class="text-[11px] text-slate-400">Use WASD or Arrow Keys to navigate</p>
+          </div>
+        </div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="p-5 flex gap-6 items-start justify-center">
+        <!-- Arcade CRT Screen -->
+        <div class="flex flex-col items-center gap-3">
+          <canvas id="arcade-canvas" width="360" height="360" class="rounded-xl border-4 border-slate-700 shadow-2xl bg-black"></canvas>
+          <button id="arcade-btn-start" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition">
+            ▶ START GAME
+          </button>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="w-64 flex flex-col gap-2">
+          <h4 class="text-xs font-extrabold text-amber-400 uppercase tracking-wider">🏆 Leaderboard</h4>
+          <div id="arcade-leaderboard-list" class="flex flex-col gap-1.5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Team Bulletin Board -->
+  <div id="modal-bulletin" class="gather-modal-backdrop hidden">
+    <div class="gather-modal-card w-[750px]">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">📌</span>
+          <div>
+            <h3 class="font-black text-sm text-slate-100">Team Bulletin Board</h3>
+            <p class="text-[11px] text-slate-400">Company announcements & sticky notes</p>
+          </div>
+        </div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="p-4 flex flex-col gap-4">
+        <!-- Add Note Form -->
+        <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 flex items-center gap-2.5">
+          <input id="note-title-input" type="text" placeholder="Note Title..." class="w-48 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100" />
+          <input id="note-content-input" type="text" placeholder="Write something..." class="flex-1 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100" />
+          <select id="note-color-select" class="bg-slate-800 text-xs px-2 py-1.5 rounded-lg border border-slate-700 text-slate-200">
+            <option value="#FEF08A">Yellow</option>
+            <option value="#BAE6FD">Blue</option>
+            <option value="#BBF7D0">Green</option>
+            <option value="#FECDD3">Pink</option>
+          </select>
+          <button id="btn-add-note" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition">Post</button>
+        </div>
+
+        <!-- Notes Grid -->
+        <div id="bulletin-notes-grid" class="grid grid-cols-3 gap-3 max-h-[380px] overflow-y-auto p-1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Coffee Machine Bar -->
+  <div id="modal-coffee" class="gather-modal-backdrop hidden">
+    <div class="gather-modal-card w-[520px]">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">☕</span>
+          <div>
+            <h3 class="font-black text-sm text-slate-100">Café Espresso Bar</h3>
+            <p class="text-[11px] text-slate-400">Order beverage for +50% movement speed boost</p>
+          </div>
+        </div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="p-5 grid grid-cols-2 gap-3">
+        <button class="coffee-beverage-btn p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 flex items-center gap-3 text-left transition" data-beverage="Espresso Doppio">
+          <span class="text-2xl">☕</span>
+          <div>
+            <div class="text-xs font-extrabold text-slate-100">Espresso Doppio</div>
+            <div class="text-[10px] text-amber-400 font-bold">+50% Speed (30s)</div>
+          </div>
+        </button>
+
+        <button class="coffee-beverage-btn p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 flex items-center gap-3 text-left transition" data-beverage="Iced Boba Milk Tea">
+          <span class="text-2xl">🧋</span>
+          <div>
+            <div class="text-xs font-extrabold text-slate-100">Boba Milk Tea</div>
+            <div class="text-[10px] text-emerald-400 font-bold">+50% Speed (30s)</div>
+          </div>
+        </button>
+
+        <button class="coffee-beverage-btn p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 flex items-center gap-3 text-left transition" data-beverage="Matcha Latte">
+          <span class="text-2xl">🍵</span>
+          <div>
+            <div class="text-xs font-extrabold text-slate-100">Matcha Latte</div>
+            <div class="text-[10px] text-emerald-400 font-bold">+50% Speed (30s)</div>
+          </div>
+        </button>
+
+        <button class="coffee-beverage-btn p-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 flex items-center gap-3 text-left transition" data-beverage="Cold Brew">
+          <span class="text-2xl">🧊</span>
+          <div>
+            <div class="text-xs font-extrabold text-slate-100">Cold Brew</div>
+            <div class="text-[10px] text-cyan-400 font-bold">+50% Speed (30s)</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Icebreaker Wheel of Fortune -->
+  <div id="modal-wheel" class="gather-modal-backdrop hidden">
+    <div class="gather-modal-card w-[520px]">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">🎡</span>
+          <div>
+            <h3 class="font-black text-sm text-slate-100">Icebreaker Wheel of Fortune</h3>
+            <p class="text-[11px] text-slate-400">Spin the wheel to get fun team discussion topics</p>
+          </div>
+        </div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="p-6 flex flex-col items-center gap-4 text-center">
+        <div class="w-32 h-32 rounded-full border-4 border-amber-400 flex items-center justify-center text-5xl shadow-[0_0_25px_rgba(251,191,36,0.4)] animate-spin-slow">
+          🎡
+        </div>
+        <button id="btn-spin-wheel" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:opacity-90 text-white font-black text-xs shadow-lg transition">
+          🎲 SPIN THE WHEEL
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Gather Avatar Studio (Character Customizer) -->
+  <div id="modal-avatar-studio" class="gather-modal-backdrop hidden">
+    <div class="gather-modal-card w-[680px]">
+      <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">🎨</span>
+          <div>
+            <h3 class="font-black text-sm text-slate-100">Gather Avatar Studio</h3>
+            <p class="text-[11px] text-slate-400">Customize your pixel character & outfit</p>
+          </div>
+        </div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="p-5 flex gap-6">
+        <!-- Live Avatar Preview -->
+        <div class="flex flex-col items-center gap-3">
+          <canvas id="avatar-preview-canvas" width="128" height="128" class="rounded-2xl border-2 border-slate-700 bg-slate-900 shadow-inner"></canvas>
+          <input id="avatar-name-input" type="text" placeholder="Your Name" class="w-32 bg-slate-800 text-xs text-center font-bold px-2 py-1.5 rounded-lg border border-slate-700 text-slate-100" />
+        </div>
+
+        <!-- Customization Options Tabs -->
+        <div class="flex-1 flex flex-col gap-3">
+          <!-- Skin Tones -->
+          <div>
+            <label class="text-[11px] font-extrabold text-slate-400 uppercase">Skin Tone</label>
+            <div class="flex items-center gap-2 mt-1">
+              <button class="avatar-skin-opt w-6 h-6 rounded-full border border-white/20" style="background-color: #FDDFB5" data-skin="#FDDFB5"></button>
+              <button class="avatar-skin-opt w-6 h-6 rounded-full border border-white/20" style="background-color: #F5C698" data-skin="#F5C698"></button>
+              <button class="avatar-skin-opt w-6 h-6 rounded-full border border-white/20" style="background-color: #D69B67" data-skin="#D69B67"></button>
+              <button class="avatar-skin-opt w-6 h-6 rounded-full border border-white/20" style="background-color: #A66A38" data-skin="#A66A38"></button>
+              <button class="avatar-skin-opt w-6 h-6 rounded-full border border-white/20" style="background-color: #633B18" data-skin="#633B18"></button>
+              <button class="avatar-skin-opt w-6 h-6 rounded-full border border-white/20" style="background-color: #FFE7D1" data-skin="#FFE7D1"></button>
+            </div>
+          </div>
+
+          <!-- Hair Styles -->
+          <div>
+            <label class="text-[11px] font-extrabold text-slate-400 uppercase">Hair Style</label>
+            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+              <button class="avatar-hair-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-hair="part">Parted</button>
+              <button class="avatar-hair-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-hair="buzz">Buzz Cut</button>
+              <button class="avatar-hair-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-hair="curly">Curly</button>
+              <button class="avatar-hair-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-hair="bob">Bob</button>
+              <button class="avatar-hair-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-hair="ponytail">Ponytail</button>
+              <button class="avatar-hair-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-hair="afro">Afro</button>
+            </div>
+          </div>
+
+          <!-- Hair Colors -->
+          <div>
+            <label class="text-[11px] font-extrabold text-slate-400 uppercase">Hair Color</label>
+            <div class="flex items-center gap-2 mt-1">
+              <button class="avatar-haircolor-opt w-5 h-5 rounded-full" style="background-color: #1E1E24" data-haircolor="#1E1E24"></button>
+              <button class="avatar-haircolor-opt w-5 h-5 rounded-full" style="background-color: #3E2723" data-haircolor="#3E2723"></button>
+              <button class="avatar-haircolor-opt w-5 h-5 rounded-full" style="background-color: #E0A96D" data-haircolor="#E0A96D"></button>
+              <button class="avatar-haircolor-opt w-5 h-5 rounded-full" style="background-color: #A52A2A" data-haircolor="#A52A2A"></button>
+              <button class="avatar-haircolor-opt w-5 h-5 rounded-full" style="background-color: #3B82F6" data-haircolor="#3B82F6"></button>
+              <button class="avatar-haircolor-opt w-5 h-5 rounded-full" style="background-color: #8B5CF6" data-haircolor="#8B5CF6"></button>
+            </div>
+          </div>
+
+          <!-- Outfit Style & Color -->
+          <div>
+            <label class="text-[11px] font-extrabold text-slate-400 uppercase">Outfit</label>
+            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+              <button class="avatar-outfit-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-outfit="hoodie">Hoodie</button>
+              <button class="avatar-outfit-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-outfit="suit">Suit & Tie</button>
+              <button class="avatar-outfit-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-outfit="polo">Polo Shirt</button>
+            </div>
+            <div class="flex items-center gap-2 mt-2">
+              <button class="avatar-outfitcolor-opt w-5 h-5 rounded-full" style="background-color: #3B82F6" data-outfitcolor="#3B82F6"></button>
+              <button class="avatar-outfitcolor-opt w-5 h-5 rounded-full" style="background-color: #10B981" data-outfitcolor="#10B981"></button>
+              <button class="avatar-outfitcolor-opt w-5 h-5 rounded-full" style="background-color: #EF4444" data-outfitcolor="#EF4444"></button>
+              <button class="avatar-outfitcolor-opt w-5 h-5 rounded-full" style="background-color: #F59E0B" data-outfitcolor="#F59E0B"></button>
+              <button class="avatar-outfitcolor-opt w-5 h-5 rounded-full" style="background-color: #8B5CF6" data-outfitcolor="#8B5CF6"></button>
+              <button class="avatar-outfitcolor-opt w-5 h-5 rounded-full" style="background-color: #1E293B" data-outfitcolor="#1E293B"></button>
+            </div>
+          </div>
+
+          <!-- Accessories -->
+          <div>
+            <label class="text-[11px] font-extrabold text-slate-400 uppercase">Accessories</label>
+            <div class="flex items-center gap-1.5 mt-1">
+              <button class="avatar-accessory-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-accessory="none">None</button>
+              <button class="avatar-accessory-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-accessory="glasses">Glasses</button>
+              <button class="avatar-accessory-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-accessory="sunglasses">Sunglasses</button>
+              <button class="avatar-accessory-opt px-2.5 py-1 rounded bg-slate-800 text-[11px] font-bold text-slate-200" data-accessory="headphones">Headphones</button>
+            </div>
+          </div>
+
+          <button id="btn-save-avatar" class="mt-2 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md transition">
+            SAVE & ENTER OFFICE
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Entry Script (ES Module) -->
+  <script type="module" src="./js/game.js"></script>
+</body>
+</html>

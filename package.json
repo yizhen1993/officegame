@@ -1,0 +1,26 @@
+{
+  "name": "officegame",
+  "version": "2.0.0",
+  "description": "Gather.town v2 Virtual Office clone with private spaces, interactive whiteboard, video grid, and pixel avatars",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "gather-town",
+    "virtual-office",
+    "phaser3",
+    "socketio",
+    "webrtc",
+    "pixel-art",
+    "multiplayer"
+  ],
+  "author": "KopiPeng Architect",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}
