@@ -375,10 +375,14 @@ export class MainScene extends Phaser.Scene {
     this.defaultZoom = 2.0;
     this.currentZoom = 2.0;
 
+    // Strict map bounds guarantee camera never views outside map boundaries
+    this.cameras.main.setBounds(0, 0, GATHER_CONFIG.MAP_WIDTH_PX, GATHER_CONFIG.MAP_HEIGHT_PX);
+
     const applyZoom = (targetZoom) => {
+      // Clamped between 1.0 (full map overview) and 2.5 (close-up) so view never reveals empty outer void
       const clampedZoom = Phaser.Math.Clamp(
         Math.round(targetZoom * 10) / 10,
-        0.8,
+        1.0,
         2.5
       );
       if (Math.abs(this.cameras.main.zoom - clampedZoom) < 0.01) return;
@@ -386,24 +390,14 @@ export class MainScene extends Phaser.Scene {
       this.currentZoom = clampedZoom;
       this.cameras.main.setZoom(clampedZoom);
 
-      if (clampedZoom > 1.0) {
-        if (this.localPlayer) {
-          const padX = (GATHER_CONFIG.MAP_WIDTH_PX / 2) / clampedZoom;
-          const padY = (GATHER_CONFIG.MAP_HEIGHT_PX / 2) / clampedZoom;
-          this.cameras.main.setBounds(
-            -padX,
-            -padY,
-            GATHER_CONFIG.MAP_WIDTH_PX + padX * 2,
-            GATHER_CONFIG.MAP_HEIGHT_PX + padY * 2
-          );
-          if (!this.cameras.main._follow) {
-            this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
-          }
+      // Keep camera bounds strictly within map dimensions [0, 0, MAP_WIDTH, MAP_HEIGHT]
+      // This fulfills the screen completely with map art and leaves no blank areas on left or right sides
+      this.cameras.main.setBounds(0, 0, GATHER_CONFIG.MAP_WIDTH_PX, GATHER_CONFIG.MAP_HEIGHT_PX);
+
+      if (this.localPlayer) {
+        if (!this.cameras.main._follow) {
+          this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
         }
-      } else {
-        this.cameras.main.stopFollow();
-        this.cameras.main.setBounds(0, 0, GATHER_CONFIG.MAP_WIDTH_PX, GATHER_CONFIG.MAP_HEIGHT_PX);
-        this.cameras.main.setScroll(0, 0);
       }
     };
 

@@ -29,7 +29,7 @@ class GatherAppController {
   }
 
   init() {
-    // 1. Initialize Phaser 3 Game Config (Fixed resolution & FIT mode for consistent device layout)
+    // 1. Initialize Phaser 3 Game Config (ENVELOP mode to fulfill screen without blank side bars)
     const config = {
       type: Phaser.AUTO,
       parent: 'phaser-container',
@@ -46,7 +46,7 @@ class GatherAppController {
       },
       scene: [MainScene],
       scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.ENVELOP,
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: GATHER_CONFIG.MAP_WIDTH_PX,
         height: GATHER_CONFIG.MAP_HEIGHT_PX
@@ -54,6 +54,13 @@ class GatherAppController {
     };
 
     this.game = new Phaser.Game(config);
+
+    // Keep scale responsive on window resize
+    window.addEventListener('resize', () => {
+      if (this.game && this.game.scale) {
+        this.game.scale.refresh();
+      }
+    });
 
     // 2. Setup Network Event Listeners
     this.setupNetworkListeners();
