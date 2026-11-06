@@ -143,41 +143,6 @@ export class MainScene extends Phaser.Scene {
       this.placeWall(33 * T + T / 2, y * T + T / 2, 'wall_top');
     }
 
-    // 4D. Lounge Walls (Top boundary at y=24, Right boundary at x=16)
-    for (let x = 1; x <= 16; x++) {
-      if (x < 6 || x > 10) { // Wide 5-tile doorway at x: 6..10
-        this.placeWall(x * T + T / 2, 24 * T + T / 2, 'wall_glass');
-      }
-    }
-    for (let y = 25; y <= 36; y++) {
-      if (y < 28 || y > 30) { // 3-tile side doorway at y: 28..30
-        this.placeWall(16 * T + T / 2, y * T + T / 2, 'wall_glass');
-      }
-    }
-
-    // 4E. Cafeteria Walls (Top boundary at y=22, Left boundary at x=34)
-    for (let x = 34; x <= 48; x++) {
-      if (x < 39 || x > 43) { // Wide 5-tile doorway at x: 39..43
-        this.placeWall(x * T + T / 2, 22 * T + T / 2, 'wall_glass');
-      }
-    }
-    for (let y = 23; y <= 36; y++) {
-      if (y < 28 || y > 30) { // 3-tile side doorway at y: 28..30
-        this.placeWall(34 * T + T / 2, y * T + T / 2, 'wall_glass');
-      }
-    }
-
-    // 4F. Texas Hold'em Poker Club Partitions (Bottom-Center)
-    for (let x = 18; x <= 32; x++) {
-      if (x < 22 || x > 28) { // Grand 7-tile entrance archway at x: 22..28
-        this.placeWall(x * T + T / 2, 26 * T + T / 2, 'wall_glass');
-      }
-    }
-    for (let y = 27; y <= 36; y++) {
-      this.placeWall(17 * T + T / 2, y * T + T / 2, 'wall_glass');
-      this.placeWall(33 * T + T / 2, y * T + T / 2, 'wall_glass');
-    }
-
     // 5. Furniture Placement
     // 5A. Boardroom Conference Table
     this.placeFurniture(240, 240, 'boardroom_table_piece', true);
