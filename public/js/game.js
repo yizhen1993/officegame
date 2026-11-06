@@ -254,6 +254,14 @@ class GatherAppController {
       }
     });
 
+    this.network.on('roulette_started', (data) => {
+      if (this.ui) this.ui.handleRouletteStarted(data);
+    });
+
+    this.network.on('roulette_finished', (data) => {
+      if (this.ui) this.ui.handleRouletteFinished(data);
+    });
+
     this.network.on('chat_broadcast', (msg) => {
       if (this.ui) this.ui.appendChatMessage(msg);
     });

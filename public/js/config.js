@@ -25,15 +25,15 @@ export const GATHER_CONFIG = {
       id: 'boardroom',
       name: 'Executive Boardroom',
       color: '#4338CA', // Indigo
-      bounds: { x1: 576, y1: 864, x2: 1024, y2: 1184 },
-      desc: 'Executive meeting plaza with conference seats & synchronized presentation screen.'
+      bounds: { x1: 1088, y1: 32, x2: 1568, y2: 448 },
+      desc: 'Standalone executive meeting room with conference table & synchronized presentation screen.'
     },
     brainstorm: {
       id: 'brainstorm',
-      name: 'Brainstorm Lab',
+      name: 'Brainstorm & Ideation Plaza',
       color: '#0D9488', // Teal
-      bounds: { x1: 1088, y1: 32, x2: 1568, y2: 448 },
-      desc: 'Ideation hub with interactive whiteboard & circular collaboration table.'
+      bounds: { x1: 576, y1: 864, x2: 1024, y2: 1184 },
+      desc: 'Central ideation plaza with interactive whiteboard & circular collaboration table.'
     },
     focus_pod_1: {
       id: 'focus_pod_1',
@@ -87,21 +87,21 @@ export const GATHER_CONFIG = {
 
   // Chairs list: Exact pixel placement and facing direction
   CHAIRS: [
-    // Executive Boardroom Conference Chairs (South-Center Plaza)
-    { id: 'br_chair_top_1', x: 752, y: 980, direction: 'down', spaceId: 'boardroom' },
-    { id: 'br_chair_top_2', x: 800, y: 980, direction: 'down', spaceId: 'boardroom' },
-    { id: 'br_chair_top_3', x: 848, y: 980, direction: 'down', spaceId: 'boardroom' },
-    { id: 'br_chair_bot_1', x: 752, y: 1068, direction: 'up', spaceId: 'boardroom' },
-    { id: 'br_chair_bot_2', x: 800, y: 1068, direction: 'up', spaceId: 'boardroom' },
-    { id: 'br_chair_bot_3', x: 848, y: 1068, direction: 'up', spaceId: 'boardroom' },
-    { id: 'br_chair_left',  x: 708, y: 1024, direction: 'right', spaceId: 'boardroom' },
-    { id: 'br_chair_right', x: 892, y: 1024, direction: 'left', spaceId: 'boardroom' },
+    // Executive Boardroom Conference Chairs (Top-Right Standalone Room)
+    { id: 'br_chair_top_1', x: 1280, y: 196, direction: 'down', spaceId: 'boardroom' },
+    { id: 'br_chair_top_2', x: 1328, y: 196, direction: 'down', spaceId: 'boardroom' },
+    { id: 'br_chair_top_3', x: 1376, y: 196, direction: 'down', spaceId: 'boardroom' },
+    { id: 'br_chair_bot_1', x: 1280, y: 284, direction: 'up', spaceId: 'boardroom' },
+    { id: 'br_chair_bot_2', x: 1328, y: 284, direction: 'up', spaceId: 'boardroom' },
+    { id: 'br_chair_bot_3', x: 1376, y: 284, direction: 'up', spaceId: 'boardroom' },
+    { id: 'br_chair_left',  x: 1236, y: 240, direction: 'right', spaceId: 'boardroom' },
+    { id: 'br_chair_right', x: 1420, y: 240, direction: 'left', spaceId: 'boardroom' },
 
-    // Brainstorm Lab (Round collaboration table)
-    { id: 'bs_chair_top',   x: 1328, y: 216, direction: 'down', spaceId: 'brainstorm' },
-    { id: 'bs_chair_bot',   x: 1328, y: 296, direction: 'up', spaceId: 'brainstorm' },
-    { id: 'bs_chair_left',  x: 1288, y: 256, direction: 'right', spaceId: 'brainstorm' },
-    { id: 'bs_chair_right', x: 1368, y: 256, direction: 'left', spaceId: 'brainstorm' },
+    // Brainstorm & Ideation Plaza (South-Center Plaza)
+    { id: 'bs_chair_top',   x: 800, y: 984, direction: 'down', spaceId: 'brainstorm' },
+    { id: 'bs_chair_bot',   x: 800, y: 1064, direction: 'up', spaceId: 'brainstorm' },
+    { id: 'bs_chair_left',  x: 760, y: 1024, direction: 'right', spaceId: 'brainstorm' },
+    { id: 'bs_chair_right', x: 840, y: 1024, direction: 'left', spaceId: 'brainstorm' },
 
     // Focus Pods (1 chair in each pod)
     { id: 'pod1_chair', x: 640, y: 152, direction: 'up', spaceId: 'focus_pod_1' },
@@ -170,8 +170,8 @@ export const GATHER_CONFIG = {
       type: 'whiteboard',
       name: 'Interactive Whiteboard',
       prompt: 'Press X to draw & collaborate',
-      x: 1328,
-      y: 96,
+      x: 800,
+      y: 912,
       width: 96,
       height: 48,
       modalId: 'modal-whiteboard'
@@ -181,8 +181,8 @@ export const GATHER_CONFIG = {
       type: 'media',
       name: 'Executive Presentation Screen',
       prompt: 'Press X to open Media & Live Radio Player',
-      x: 800,
-      y: 912,
+      x: 1328,
+      y: 96,
       width: 96,
       height: 54,
       modalId: 'modal-media'
@@ -236,8 +236,8 @@ export const GATHER_CONFIG = {
       type: 'wheel',
       name: 'Icebreaker Wheel of Fortune',
       prompt: 'Press X to spin the Wheel',
-      x: 1472,
-      y: 992,
+      x: 1456,
+      y: 960,
       width: 48,
       height: 48,
       modalId: 'modal-wheel'

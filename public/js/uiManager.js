@@ -645,6 +645,9 @@ export class UIManager {
       if (modalKey === 'poker' && this.poker) {
         this.poker.render();
       }
+      if (modalKey === 'wheel') {
+        setTimeout(() => this.initRouletteWheel(), 50);
+      }
       if (modalKey === 'bulletin') {
         const inp = document.getElementById('note-title-input');
         if (inp) setTimeout(() => inp.focus(), 100);
@@ -1129,5 +1132,199 @@ export class UIManager {
       toast.classList.add('animate-fadeOut');
       setTimeout(() => toast.remove(), 300);
     }, 2500);
+  }
+
+  // ==========================================================================
+  // ICEBREAKER WHEEL OF FORTUNE (ROULETTE)
+  // ==========================================================================
+  initRouletteWheel() {
+    this.rouletteSlices = [
+      { text: 'Productivity', icon: '💡', color: '#10B981' }, // 0
+      { text: 'Dream Travel', icon: '✈️', color: '#06B6D4' }, // 1
+      { text: 'Tea or Coffee', icon: '☕', color: '#F59E0B' }, // 2
+      { text: 'Coding Song',  icon: '🎵', color: '#6366F1' }, // 3
+      { text: 'Secret Hobby', icon: '🎭', color: '#8B5CF6' }, // 4
+      { text: 'Favorite Meal',icon: '🍰', color: '#EC4899' }  // 5
+    ];
+    this.rouletteAngle = this.rouletteAngle || 0;
+    this.isRouletteSpinning = false;
+    this.drawRouletteWheel(this.rouletteAngle);
+  }
+
+  drawRouletteWheel(angle = 0) {
+    const canvas = document.getElementById('roulette-wheel-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const cx = width / 2;
+    const cy = height / 2;
+    const radius = cx - 10;
+    const slices = this.rouletteSlices || [
+      { text: 'Productivity', icon: '💡', color: '#10B981' },
+      { text: 'Dream Travel', icon: '✈️', color: '#06B6D4' },
+      { text: 'Tea or Coffee', icon: '☕', color: '#F59E0B' },
+      { text: 'Coding Song',  icon: '🎵', color: '#6366F1' },
+      { text: 'Secret Hobby', icon: '🎭', color: '#8B5CF6' },
+      { text: 'Favorite Meal',icon: '🍰', color: '#EC4899' }
+    ];
+    const numSlices = slices.length;
+    const sliceAngle = (Math.PI * 2) / numSlices;
+
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+
+    for (let i = 0; i < numSlices; i++) {
+      const startA = i * sliceAngle;
+      const endA = startA + sliceAngle;
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, radius, startA, endA);
+      ctx.closePath();
+      ctx.fillStyle = slices[i].color;
+      ctx.fill();
+      ctx.strokeStyle = '#1E293B';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Text & icon
+      ctx.save();
+      const midA = startA + sliceAngle / 2;
+      ctx.rotate(midA);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText(`${slices[i].icon} ${slices[i].text}`, radius - 16, 4);
+      ctx.restore();
+    }
+
+    // Outer gold border with division pegs
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = '#F59E0B';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // Small golden pegs around edge
+    for (let i = 0; i < numSlices; i++) {
+      const a = i * sliceAngle;
+      const px = Math.cos(a) * (radius - 2);
+      const py = Math.sin(a) * (radius - 2);
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#FDE68A';
+      ctx.fill();
+    }
+
+    // Center circular badge
+    ctx.beginPath();
+    ctx.arc(0, 0, 26, 0, Math.PI * 2);
+    ctx.fillStyle = '#0F172A';
+    ctx.fill();
+    ctx.strokeStyle = '#F59E0B';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.font = '16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⭐', 0, 0);
+
+    ctx.restore();
+  }
+
+  playRouletteTick() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!this.audioCtx) this.audioCtx = new AudioCtx();
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(650, this.audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(180, this.audioCtx.currentTime + 0.03);
+      gain.gain.setValueAtTime(0.12, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.03);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + 0.035);
+    } catch (e) {}
+  }
+
+  handleRouletteStarted(data) {
+    const { targetIndex, spinner } = data;
+    const btn = document.getElementById('btn-spin-wheel');
+    const badge = document.getElementById('roulette-status-badge');
+    const topicText = document.getElementById('roulette-topic-text');
+    if (btn) btn.disabled = true;
+    if (badge) {
+      badge.textContent = `🎲 ${spinner} is spinning...`;
+      badge.className = 'text-[10px] uppercase font-black tracking-wider text-rose-400 animate-pulse';
+    }
+    if (topicText) {
+      topicText.textContent = 'Hold tight! Wheel is deciding the icebreaker topic...';
+    }
+
+    this.isRouletteSpinning = true;
+
+    const sliceAngle = (Math.PI * 2) / 6;
+    const sliceCenter = targetIndex * sliceAngle + sliceAngle / 2;
+    const desiredFinalAngle = -Math.PI / 2 - sliceCenter;
+    const currentNorm = (this.rouletteAngle || 0) % (Math.PI * 2);
+    const extraRotations = 5 * Math.PI * 2; // 5 full loops
+    let totalDelta = desiredFinalAngle - currentNorm + extraRotations;
+    while (totalDelta < extraRotations) {
+      totalDelta += Math.PI * 2;
+    }
+
+    const startAngle = this.rouletteAngle || 0;
+    const targetAngle = startAngle + totalDelta;
+    const duration = 3600; // 3.6s
+    const startTime = performance.now();
+    let lastTickSlice = -1;
+
+    const animate = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const curAngle = startAngle + totalDelta * ease;
+      this.rouletteAngle = curAngle;
+      this.drawRouletteWheel(curAngle);
+
+      const curSlice = Math.floor((curAngle / sliceAngle)) % 6;
+      if (curSlice !== lastTickSlice) {
+        lastTickSlice = curSlice;
+        this.playRouletteTick();
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        this.isRouletteSpinning = false;
+        this.drawRouletteWheel(targetAngle);
+      }
+    };
+    requestAnimationFrame(animate);
+  }
+
+  handleRouletteFinished(data) {
+    const { topic, spinner } = data;
+    const btn = document.getElementById('btn-spin-wheel');
+    const badge = document.getElementById('roulette-status-badge');
+    const topicText = document.getElementById('roulette-topic-text');
+    if (btn) btn.disabled = false;
+    if (badge) {
+      badge.textContent = `✨ ICEBREAKER TOPIC (Spun by ${spinner})`;
+      badge.className = 'text-[10px] uppercase font-black tracking-wider text-emerald-400';
+    }
+    if (topicText) {
+      topicText.textContent = `"${topic}"`;
+    }
+    this.showToast(`🎡 Icebreaker Topic: "${topic}"`, '#10B981');
   }
 }

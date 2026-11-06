@@ -54,7 +54,7 @@ const GATHER_OFFICE_STATE = {
   spaces: {
     open_office: { name: 'Open Office Hallway', maxCapacity: 50, isPrivate: false },
     boardroom: { name: 'Executive Boardroom', maxCapacity: 12, isPrivate: true },
-    brainstorm: { name: 'Brainstorm Lab', maxCapacity: 8, isPrivate: true },
+    brainstorm: { name: 'Brainstorm & Ideation Plaza', maxCapacity: 12, isPrivate: true },
     lounge: { name: 'Cozy Lounge & Fireplace', maxCapacity: 12, isPrivate: true },
     cafeteria: { name: 'Cafeteria & Arcade Bar', maxCapacity: 16, isPrivate: true },
     poker_room: { name: 'Kosmi Texas Hold\'em Poker Club', maxCapacity: 12, isPrivate: true },
@@ -740,17 +740,29 @@ io.on('connection', (socket) => {
     const randomIndex = Math.floor(Math.random() * QUESTIONS.length);
     const resultTopic = QUESTIONS[randomIndex];
 
+    const spinnerName = GATHER_OFFICE_STATE.players[socket.id]?.name || 'Teammate';
+
     io.emit('roulette_started', {
       targetIndex: randomIndex,
       topic: resultTopic,
-      spinner: GATHER_OFFICE_STATE.players[socket.id]?.name || 'Teammate'
+      spinner: spinnerName
     });
 
     setTimeout(() => {
       GATHER_OFFICE_STATE.roulette.active = false;
       GATHER_OFFICE_STATE.roulette.result = resultTopic;
       io.emit('roulette_finished', {
-        topic: resultTopic
+        targetIndex: randomIndex,
+        topic: resultTopic,
+        spinner: spinnerName
+      });
+      io.emit('chat_broadcast', {
+        id: 'sys_' + Date.now(),
+        channel: 'global',
+        senderId: 'system',
+        senderName: '🎲 Roulette',
+        text: `Icebreaker Topic: "${resultTopic}" (Spun by ${spinnerName})`,
+        timestamp: Date.now()
       });
     }, 4000);
   });

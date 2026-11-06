@@ -66,9 +66,9 @@ export class MainScene extends Phaser.Scene {
         if (x >= 1 && x <= 16 && y >= 1 && y <= 14) {
           tileKey = 'floor_carpet_casino';
         }
-        // Brainstorm Lab (Top-Right)
+        // Executive Boardroom (Top-Right Standalone Room)
         else if (x >= 34 && x <= 48 && y >= 1 && y <= 14) {
-          tileKey = 'floor_carpet_slate';
+          tileKey = 'floor_wood_dark';
         }
         // Focus Pods (Top-Center)
         else if (x >= 17 && x <= 33 && y >= 1 && y <= 8) {
@@ -82,9 +82,9 @@ export class MainScene extends Phaser.Scene {
         else if (x >= 34 && x <= 48 && y >= 22 && y <= 36) {
           tileKey = 'floor_tile_bistro';
         }
-        // Executive Boardroom & Meeting Plaza (Bottom-Center)
+        // Brainstorm & Ideation Plaza (Bottom-Center)
         else if (x >= 18 && x <= 32 && y >= 27 && y <= 36) {
-          tileKey = 'floor_wood_dark';
+          tileKey = 'floor_carpet_slate';
         }
 
         this.add.image(px, py, tileKey);
@@ -93,7 +93,8 @@ export class MainScene extends Phaser.Scene {
 
     // 2. Area Rugs
     this.add.image(288, 992, 'floor_rug_ornate').setScale(2); // In Lounge
-    this.add.image(800, 1024, 'floor_rug_ornate').setScale(1.6); // Under Boardroom conference table
+    this.add.image(1328, 240, 'floor_rug_ornate').setScale(1.5); // Under Boardroom conference table in Top-Right
+    this.add.image(800, 1024, 'floor_rug_ornate').setScale(1.2); // Under Brainstorm table in South-Center
 
     // 3. Perimeter Boundary Walls
     for (let x = 0; x < W; x++) {
@@ -157,12 +158,12 @@ export class MainScene extends Phaser.Scene {
 
     // 4E. Cafeteria Walls (Top boundary at y=22, Left boundary at x=34)
     for (let x = 34; x <= 48; x++) {
-      if (x < 39 || x > 43) { // Wide 5-tile doorway at x: 39..43
+      if (x < 37 || x > 45) { // Grand 9-tile entrance at x: 37..45 (wide open walkway into pantry!)
         this.placeWall(x * T + T / 2, 22 * T + T / 2, 'wall_glass');
       }
     }
     for (let y = 23; y <= 36; y++) {
-      if (y < 28 || y > 30) { // 3-tile side doorway at y: 28..30
+      if (y < 25 || y > 33) { // Grand 9-tile side entrance at y: 25..33 (completely open walkway from plaza into pantry!)
         this.placeWall(34 * T + T / 2, y * T + T / 2, 'wall_glass');
       }
     }
@@ -171,8 +172,9 @@ export class MainScene extends Phaser.Scene {
     // 5A. Kosmi Texas Hold'em VIP Poker Table (Top-Left Enclosed Room)
     this.placeFurniture(272, 240, 'poker_table_felt', false);
 
-    // 5B. Brainstorm Collaboration Table
-    this.placeFurniture(1328, 256, 'round_collab_table', true);
+    // 5B. Executive Boardroom Conference Table (Top-Right Standalone Meeting Room)
+    this.placeFurniture(1296, 240, 'boardroom_table_piece', false);
+    this.placeFurniture(1360, 240, 'boardroom_table_piece', false);
 
     // 5C. Focus Pod Desks
     this.placeFurniture(640, 112, 'desk_single', true);
@@ -190,13 +192,12 @@ export class MainScene extends Phaser.Scene {
     this.placeFurniture(256, 940, 'coffee_table', true);
     this.placeFurniture(96, 832, 'bookshelf', true);
 
-    // 5F. Cafeteria Bistro Furniture
-    this.placeFurniture(1296, 928, 'coffee_table', true);
-    this.placeFurniture(1296, 1056, 'coffee_table', true);
+    // 5F. Cafeteria Bistro Furniture (Passable so no path blocking to the roulette)
+    this.placeFurniture(1296, 928, 'coffee_table', false);
+    this.placeFurniture(1296, 1056, 'coffee_table', false);
 
-    // 5G. Executive Boardroom Conference Table (South-Center Plaza, Passable for seamless chair access)
-    this.placeFurniture(768, 1024, 'boardroom_table_piece', false);
-    this.placeFurniture(832, 1024, 'boardroom_table_piece', false);
+    // 5G. Brainstorm & Ideation Collaboration Table (South-Center Plaza, Passable for seamless chair access)
+    this.placeFurniture(800, 1024, 'round_collab_table', false);
 
     // 5H. Office Plants (Passable so no corner traps)
     this.placeFurniture(80, 80, 'plant_ficus', false);
