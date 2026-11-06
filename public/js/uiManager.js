@@ -259,15 +259,47 @@ export class UIManager {
 
     // 13. Bulletin Notes Add Form
     const btnAddNote = document.getElementById('btn-add-note');
+    const noteTitleInput = document.getElementById('note-title-input');
+    const noteContentInput = document.getElementById('note-content-input');
+
+    const submitStickyNote = () => {
+      let title = noteTitleInput ? noteTitleInput.value.trim() : '';
+      const content = noteContentInput ? noteContentInput.value.trim() : '';
+      const colorSelect = document.getElementById('note-color-select');
+      const color = colorSelect ? colorSelect.value : '#FEF08A';
+
+      if (!content && !title) {
+        this.showToast('⚠️ Please write something on the sticky note!', '#F59E0B');
+        if (noteContentInput) noteContentInput.focus();
+        return;
+      }
+
+      if (!title) {
+        title = content.length > 20 ? content.slice(0, 18) + '...' : 'Quick Note';
+      }
+
+      this.network.addNote(title, content || title, color);
+      if (noteTitleInput) noteTitleInput.value = '';
+      if (noteContentInput) noteContentInput.value = '';
+      this.showToast('📌 Sticky note posted to board!', '#10B981');
+    };
+
     if (btnAddNote) {
-      btnAddNote.addEventListener('click', () => {
-        const title = document.getElementById('note-title-input').value.trim();
-        const content = document.getElementById('note-content-input').value.trim();
-        const color = document.getElementById('note-color-select').value;
-        if (title && content) {
-          this.network.addNote(title, content, color);
-          document.getElementById('note-title-input').value = '';
-          document.getElementById('note-content-input').value = '';
+      btnAddNote.addEventListener('click', submitStickyNote);
+    }
+    if (noteTitleInput) {
+      noteTitleInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (noteContentInput) noteContentInput.focus();
+        }
+      });
+    }
+    if (noteContentInput) {
+      noteContentInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitStickyNote();
         }
       });
     }
@@ -498,6 +530,10 @@ export class UIManager {
 
       if (modalKey === 'arcade' && this.arcadeGame) {
         this.arcadeGame.render();
+      }
+      if (modalKey === 'bulletin') {
+        const inp = document.getElementById('note-title-input');
+        if (inp) setTimeout(() => inp.focus(), 100);
       }
     }
   }

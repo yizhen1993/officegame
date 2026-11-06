@@ -14,6 +14,12 @@
   user-select: none;
 }
 
+input, textarea, select {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  pointer-events: auto !important;
+}
+
 body {
   font-family: 'Nunito', sans-serif;
   background-color: #0F172A;

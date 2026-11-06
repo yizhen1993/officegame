@@ -470,6 +470,44 @@ export class TextureGenerator {
 
       tm.addCanvas('plant_monstera', canvas);
     }
+
+    // 3I. Ficus Office Tree (32x40)
+    {
+      const { canvas, ctx } = this.createCanvas(32, 40);
+      // Woven basket planter
+      ctx.fillStyle = '#92400E';
+      ctx.fillRect(8, 26, 16, 12);
+      ctx.fillStyle = '#B45309';
+      ctx.fillRect(7, 24, 18, 3);
+      ctx.fillStyle = '#451A03'; // Soil
+      ctx.fillRect(9, 25, 14, 2);
+
+      // Slender tree trunk
+      ctx.fillStyle = '#78350F';
+      ctx.fillRect(14, 16, 4, 10);
+      ctx.fillRect(12, 18, 3, 2);
+      ctx.fillRect(17, 17, 3, 2);
+
+      // Lush oval foliage canopy
+      ctx.fillStyle = '#065F46'; // Deep emerald
+      ctx.beginPath();
+      ctx.ellipse(16, 11, 11, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Top lighter canopy cluster
+      ctx.fillStyle = '#059669';
+      ctx.beginPath();
+      ctx.ellipse(15, 9, 8, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Lime green leaf highlights
+      ctx.fillStyle = '#34D399';
+      ctx.fillRect(13, 6, 3, 2);
+      ctx.fillRect(18, 8, 3, 2);
+      ctx.fillRect(11, 12, 2, 2);
+
+      tm.addCanvas('plant_ficus', canvas);
+    }
   }
 
   // --------------------------------------------------------------------------

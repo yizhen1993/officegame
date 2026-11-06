@@ -178,7 +178,7 @@ export const GATHER_CONFIG = {
       name: 'Team Bulletin Board',
       prompt: 'Press X to view & post Sticky Notes',
       x: 800,
-      y: 384,
+      y: 360,
       width: 64,
       height: 32,
       modalId: 'modal-bulletin'

@@ -122,9 +122,9 @@ export class MainScene extends Phaser.Scene {
       this.placeWall(34 * T + T / 2, y * T + T / 2, 'wall_glass');
     }
 
-    // 4C. Focus Pods Dividers
+    // 4C. Focus Pods Dividers (Spacious 2-tile doorways at x: 19-20, 24-25, 29-30)
     for (let x = 18; x <= 32; x++) {
-      if (x !== 20 && x !== 25 && x !== 30) {
+      if (x !== 19 && x !== 20 && x !== 24 && x !== 25 && x !== 29 && x !== 30) {
         this.placeWall(x * T + T / 2, 8 * T + T / 2, 'wall_glass');
       }
     }
@@ -201,7 +201,7 @@ export class MainScene extends Phaser.Scene {
       sprite.setData('spaceId', chair.spaceId);
     });
 
-    // 7. Interactive Objects
+    // 7. Interactive Objects (Kept outside wallsGroup so they never create hidden obstacles)
     GATHER_CONFIG.INTERACTIVE_OBJECTS.forEach(obj => {
       const item = this.add.image(obj.x, obj.y, obj.type === 'whiteboard' ? 'obj_whiteboard' :
         obj.type === 'media' ? 'obj_projector' :
@@ -212,9 +212,9 @@ export class MainScene extends Phaser.Scene {
         obj.type === 'wheel' ? 'obj_wheel' : 'obj_whiteboard'
       );
       item.setData('config', obj);
-      this.physics.add.existing(item, true); // static body
+      this.physics.add.existing(item, true); // static body for prompt trigger
+      item.refreshBody();
       this.interactiveGroup.add(item);
-      this.wallsGroup.add(item); // Solid physical collision
     });
 
     // Floating interaction prompt text (Gather v2 style: "[X] Press X to...")
@@ -249,9 +249,17 @@ export class MainScene extends Phaser.Scene {
     const item = this.add.image(x, y, textureKey);
     if (solid) {
       this.physics.add.existing(item, true);
+      item.refreshBody();
       this.wallsGroup.add(item);
     }
     return item;
+  }
+
+  isTyping() {
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
   }
 
   // ==========================================================================
@@ -276,17 +284,28 @@ export class MainScene extends Phaser.Scene {
       SIX: Phaser.Input.Keyboard.KeyCodes.SIX
     });
 
+    // Clear default keyboard captures so Space and Arrow keys work inside text inputs
+    this.input.keyboard.clearCaptures();
+
     // Interaction key (X or E)
-    this.keys.X.on('down', () => this.handleActionKey());
-    this.keys.E.on('down', () => this.handleActionKey());
+    this.keys.X.on('down', () => {
+      if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
+      this.handleActionKey();
+    });
+    this.keys.E.on('down', () => {
+      if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
+      this.handleActionKey();
+    });
 
     // Ghost Mode (G)
     this.keys.G.on('down', () => {
+      if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
       if (window.GatherApp) window.GatherApp.toggleGhost();
     });
 
     // Dance Mode (Z)
     this.keys.Z.on('down', () => {
+      if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
       if (window.GatherApp) window.GatherApp.toggleDance();
     });
 
@@ -301,6 +320,7 @@ export class MainScene extends Phaser.Scene {
     };
     Object.keys(EMOTE_MAP).forEach(keyName => {
       this.keys[keyName].on('down', () => {
+        if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
         if (window.GatherApp) window.GatherApp.sendReaction(EMOTE_MAP[keyName]);
       });
     });
@@ -428,6 +448,11 @@ export class MainScene extends Phaser.Scene {
     const player = this.localPlayer;
     const info = player.getData('info');
     if (!info) return;
+
+    if (this.isTyping() || window.GatherApp?.isModalOpen()) {
+      player.setVelocity(0, 0);
+      return;
+    }
 
     let vx = 0;
     let vy = 0;

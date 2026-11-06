@@ -50,8 +50,17 @@ export class AvatarGenerator {
       this.drawCharacterFrame(ctx, 5 * 32, row * 32, dir, 0, 'dance', config);
     });
 
-    // Remove old texture if already exists
+    // Update existing texture without destroying glTexture
     if (scene.textures.exists(key)) {
+      const tex = scene.textures.get(key);
+      const img = tex.getSourceImage();
+      if (img && img.getContext) {
+        const imgCtx = img.getContext('2d');
+        imgCtx.clearRect(0, 0, img.width, img.height);
+        imgCtx.drawImage(canvas, 0, 0);
+        tex.refresh();
+        return key;
+      }
       scene.textures.remove(key);
     }
 
