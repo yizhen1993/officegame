@@ -179,6 +179,29 @@ export class TextureGenerator {
 
       tm.addCanvas('floor_rug_ornate', canvas);
     }
+
+    // 1H. Luxury Casino Velvet Carpet (Texas Hold'em Poker Club)
+    {
+      const { canvas, ctx } = this.createCanvas(32, 32);
+      ctx.fillStyle = '#064E3B'; // Deep casino emerald green
+      ctx.fillRect(0, 0, 32, 32);
+
+      // Gold fleur / diamond geometric motif
+      ctx.strokeStyle = '#D97706';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(16, 4);
+      ctx.lineTo(28, 16);
+      ctx.lineTo(16, 28);
+      ctx.lineTo(4, 16);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.fillStyle = '#F59E0B';
+      ctx.fillRect(15, 15, 2, 2);
+
+      tm.addCanvas('floor_carpet_casino', canvas);
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -507,6 +530,59 @@ export class TextureGenerator {
       ctx.fillRect(11, 12, 2, 2);
 
       tm.addCanvas('plant_ficus', canvas);
+    }
+
+    // 3J. Kosmi Texas Hold'em Poker Table (112x64 oval felt)
+    {
+      const { canvas, ctx } = this.createCanvas(112, 64);
+      // Mahogany outer padded leather armrest
+      ctx.fillStyle = '#451A03';
+      ctx.beginPath();
+      ctx.roundRect(2, 2, 108, 60, 28);
+      ctx.fill();
+
+      // Brass / Gold rim accent
+      ctx.strokeStyle = '#F59E0B';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Inner Rich Green Felt
+      ctx.fillStyle = '#047857';
+      ctx.beginPath();
+      ctx.roundRect(8, 8, 96, 48, 22);
+      ctx.fill();
+
+      // Inner betting boundary line
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(14, 14, 84, 36, 16);
+      ctx.stroke();
+
+      // 5 Community Card outlined rectangles in center
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 1;
+      for (let c = 0; c < 5; c++) {
+        const cx = 32 + c * 10;
+        ctx.fillRect(cx, 24, 8, 12);
+        ctx.strokeRect(cx, 24, 8, 12);
+      }
+
+      // Dealer Chip Tray at top center
+      ctx.fillStyle = '#1E293B';
+      ctx.fillRect(48, 10, 16, 6);
+      // Colored chip stacks in tray
+      ctx.fillStyle = '#EF4444'; ctx.fillRect(50, 11, 2, 4);
+      ctx.fillStyle = '#3B82F6'; ctx.fillRect(54, 11, 2, 4);
+      ctx.fillStyle = '#10B981'; ctx.fillRect(58, 11, 2, 4);
+
+      // Subtle Kosmi Hold'em label in center felt
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.font = 'bold 5px sans-serif';
+      ctx.fillText('KOSMI HOLD\'EM', 38, 43);
+
+      tm.addCanvas('poker_table_felt', canvas);
     }
   }
 
@@ -857,6 +933,33 @@ export class TextureGenerator {
       ctx.fill();
 
       tm.addCanvas('obj_wheel', canvas);
+    }
+
+    // 5H. Neon Texas Hold'em Poker Sign (64x32)
+    {
+      const { canvas, ctx } = this.createCanvas(64, 32);
+      ctx.fillStyle = '#0F172A';
+      ctx.beginPath();
+      ctx.roundRect(2, 2, 60, 28, 8);
+      ctx.fill();
+
+      // Glowing emerald border
+      ctx.strokeStyle = '#10B981';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Gold Poker Title & Spade / Diamond Icons
+      ctx.fillStyle = '#F59E0B';
+      ctx.font = 'bold 8px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('♠ POKER ♣', 32, 14);
+
+      // Subtitle
+      ctx.fillStyle = '#6EE7B7';
+      ctx.font = 'bold 6px sans-serif';
+      ctx.fillText('TEXAS HOLD\'EM', 32, 24);
+
+      tm.addCanvas('obj_poker', canvas);
     }
   }
 

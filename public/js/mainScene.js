@@ -71,7 +71,7 @@ export class MainScene extends Phaser.Scene {
           tileKey = 'floor_carpet_slate';
         }
         // Focus Pods (Top-Center)
-        else if (x >= 18 && x <= 32 && y >= 1 && y <= 8) {
+        else if (x >= 17 && x <= 33 && y >= 1 && y <= 8) {
           tileKey = 'floor_pod_carpet';
         }
         // Cozy Lounge (Bottom-Left)
@@ -81,6 +81,10 @@ export class MainScene extends Phaser.Scene {
         // Cafeteria & Arcade (Bottom-Right)
         else if (x >= 34 && x <= 48 && y >= 22 && y <= 36) {
           tileKey = 'floor_tile_bistro';
+        }
+        // Texas Hold'em Poker Club (Bottom-Center)
+        else if (x >= 18 && x <= 32 && y >= 27 && y <= 36) {
+          tileKey = 'floor_carpet_casino';
         }
 
         this.add.image(px, py, tileKey);
@@ -101,58 +105,77 @@ export class MainScene extends Phaser.Scene {
       this.placeWall((W - 1) * T + T / 2, y * T + T / 2, 'wall_top');
     }
 
-    // 4. Room Partition Walls & Glass Dividers
+    // 4. Room Partition Walls & Glass Dividers (Wide doorways & Zero Hidden Obstacles)
     // 4A. Boardroom Walls (Bottom boundary at y=14, Right boundary at x=16)
     for (let x = 1; x <= 16; x++) {
-      if (x !== 8 && x !== 9) { // Doorway at x: 8, 9
+      if (x < 6 || x > 10) { // Wide 5-tile doorway at x: 6..10
         this.placeWall(x * T + T / 2, 14 * T + T / 2, 'wall_glass');
       }
     }
-    for (let y = 1; y <= 14; y++) {
-      this.placeWall(16 * T + T / 2, y * T + T / 2, 'wall_glass');
+    for (let y = 1; y < 14; y++) {
+      if (y < 6 || y > 8) { // 3-tile side doorway at y: 6..8
+        this.placeWall(16 * T + T / 2, y * T + T / 2, 'wall_glass');
+      }
     }
 
     // 4B. Brainstorm Lab Walls (Bottom boundary at y=14, Left boundary at x=34)
     for (let x = 34; x <= 48; x++) {
-      if (x !== 41 && x !== 42) { // Doorway at x: 41, 42
+      if (x < 39 || x > 43) { // Wide 5-tile doorway at x: 39..43
         this.placeWall(x * T + T / 2, 14 * T + T / 2, 'wall_glass');
       }
     }
-    for (let y = 1; y <= 14; y++) {
-      this.placeWall(34 * T + T / 2, y * T + T / 2, 'wall_glass');
+    for (let y = 1; y < 14; y++) {
+      if (y < 6 || y > 8) { // 3-tile side doorway at y: 6..8
+        this.placeWall(34 * T + T / 2, y * T + T / 2, 'wall_glass');
+      }
     }
 
-    // 4C. Focus Pods Dividers (Spacious 2-tile doorways at x: 19-20, 24-25, 29-30)
-    for (let x = 18; x <= 32; x++) {
-      if (x !== 19 && x !== 20 && x !== 24 && x !== 25 && x !== 29 && x !== 30) {
+    // 4C. Focus Pods Dividers (Spacious 3-tile doorways into hallway)
+    for (let x = 17; x <= 33; x++) {
+      if ((x < 18 || x > 20) && (x < 24 || x > 26) && (x < 30 || x > 32)) {
         this.placeWall(x * T + T / 2, 8 * T + T / 2, 'wall_glass');
       }
     }
     for (let y = 1; y <= 8; y++) {
+      this.placeWall(17 * T + T / 2, y * T + T / 2, 'wall_top');
       this.placeWall(22 * T + T / 2, y * T + T / 2, 'wall_top');
-      this.placeWall(27 * T + T / 2, y * T + T / 2, 'wall_top');
-      this.placeWall(18 * T + T / 2, y * T + T / 2, 'wall_top');
-      this.placeWall(32 * T + T / 2, y * T + T / 2, 'wall_top');
+      this.placeWall(28 * T + T / 2, y * T + T / 2, 'wall_top');
+      this.placeWall(33 * T + T / 2, y * T + T / 2, 'wall_top');
     }
 
     // 4D. Lounge Walls (Top boundary at y=24, Right boundary at x=16)
     for (let x = 1; x <= 16; x++) {
-      if (x !== 8 && x !== 9) {
+      if (x < 6 || x > 10) { // Wide 5-tile doorway at x: 6..10
         this.placeWall(x * T + T / 2, 24 * T + T / 2, 'wall_glass');
       }
     }
-    for (let y = 24; y <= 36; y++) {
-      this.placeWall(16 * T + T / 2, y * T + T / 2, 'wall_glass');
+    for (let y = 25; y <= 36; y++) {
+      if (y < 28 || y > 30) { // 3-tile side doorway at y: 28..30
+        this.placeWall(16 * T + T / 2, y * T + T / 2, 'wall_glass');
+      }
     }
 
     // 4E. Cafeteria Walls (Top boundary at y=22, Left boundary at x=34)
     for (let x = 34; x <= 48; x++) {
-      if (x !== 41 && x !== 42) {
+      if (x < 39 || x > 43) { // Wide 5-tile doorway at x: 39..43
         this.placeWall(x * T + T / 2, 22 * T + T / 2, 'wall_glass');
       }
     }
-    for (let y = 22; y <= 36; y++) {
-      this.placeWall(34 * T + T / 2, y * T + T / 2, 'wall_glass');
+    for (let y = 23; y <= 36; y++) {
+      if (y < 28 || y > 30) { // 3-tile side doorway at y: 28..30
+        this.placeWall(34 * T + T / 2, y * T + T / 2, 'wall_glass');
+      }
+    }
+
+    // 4F. Texas Hold'em Poker Club Partitions (Bottom-Center)
+    for (let x = 18; x <= 32; x++) {
+      if (x < 22 || x > 28) { // Grand 7-tile entrance archway at x: 22..28
+        this.placeWall(x * T + T / 2, 26 * T + T / 2, 'wall_glass');
+      }
+    }
+    for (let y = 27; y <= 36; y++) {
+      this.placeWall(17 * T + T / 2, y * T + T / 2, 'wall_glass');
+      this.placeWall(33 * T + T / 2, y * T + T / 2, 'wall_glass');
     }
 
     // 5. Furniture Placement
@@ -174,8 +197,8 @@ export class MainScene extends Phaser.Scene {
     this.placeFurniture(640, 768, 'desk_workstation', true);
     this.placeFurniture(960, 768, 'desk_workstation', true);
 
-    // 5E. Lounge Sofas & Coffee Table
-    this.placeFurniture(256, 880, 'couch_lounge_h', true);
+    // 5E. Lounge Sofas & Coffee Table (Sofa non-solid so seats are completely unblocked)
+    this.placeFurniture(256, 880, 'couch_lounge_h', false);
     this.placeFurniture(256, 940, 'coffee_table', true);
     this.placeFurniture(96, 832, 'bookshelf', true);
 
@@ -183,11 +206,14 @@ export class MainScene extends Phaser.Scene {
     this.placeFurniture(1296, 928, 'coffee_table', true);
     this.placeFurniture(1296, 1056, 'coffee_table', true);
 
-    // 5G. Office Plants
-    this.placeFurniture(80, 80, 'plant_ficus', true);
-    this.placeFurniture(464, 80, 'plant_monstera', true);
-    this.placeFurniture(1120, 80, 'plant_ficus', true);
-    this.placeFurniture(1520, 80, 'plant_monstera', true);
+    // 5G. Kosmi Texas Hold'em Poker Table
+    this.placeFurniture(800, 1024, 'poker_table_felt', true);
+
+    // 5H. Office Plants (Passable so no corner traps)
+    this.placeFurniture(80, 80, 'plant_ficus', false);
+    this.placeFurniture(464, 80, 'plant_monstera', false);
+    this.placeFurniture(1120, 80, 'plant_ficus', false);
+    this.placeFurniture(1520, 80, 'plant_monstera', false);
     this.placeFurniture(752, 992, 'plant_ficus', false);
     this.placeFurniture(848, 992, 'plant_ficus', false);
 
@@ -199,6 +225,7 @@ export class MainScene extends Phaser.Scene {
       sprite.setData('chairId', chair.id);
       sprite.setData('direction', chair.direction);
       sprite.setData('spaceId', chair.spaceId);
+      if (chair.seatIndex !== undefined) sprite.setData('seatIndex', chair.seatIndex);
     });
 
     // 7. Interactive Objects (Kept outside wallsGroup so they never create hidden obstacles)
@@ -209,6 +236,7 @@ export class MainScene extends Phaser.Scene {
         obj.type === 'coffee' ? 'obj_coffee' :
         obj.type === 'watercooler' ? 'obj_watercooler' :
         obj.type === 'notes' ? 'obj_bulletin' :
+        obj.type === 'poker' ? 'obj_poker' :
         obj.type === 'wheel' ? 'obj_wheel' : 'obj_whiteboard'
       );
       item.setData('config', obj);
@@ -249,6 +277,23 @@ export class MainScene extends Phaser.Scene {
     const item = this.add.image(x, y, textureKey);
     if (solid) {
       this.physics.add.existing(item, true);
+      // Precision hitboxes to prevent trapping players near chairs
+      if (textureKey === 'desk_workstation') {
+        item.body.setSize(56, 16);
+        item.body.setOffset(4, 8);
+      } else if (textureKey === 'boardroom_table_piece') {
+        item.body.setSize(56, 18);
+        item.body.setOffset(4, 7);
+      } else if (textureKey === 'round_collab_table') {
+        item.body.setSize(34, 34);
+        item.body.setOffset(7, 7);
+      } else if (textureKey === 'poker_table_felt') {
+        item.body.setSize(80, 36);
+        item.body.setOffset(16, 14);
+      } else if (textureKey === 'coffee_table') {
+        item.body.setSize(30, 14);
+        item.body.setOffset(5, 5);
+      }
       item.refreshBody();
       this.wallsGroup.add(item);
     }
@@ -543,6 +588,11 @@ export class MainScene extends Phaser.Scene {
 
     if (window.GatherApp) {
       window.GatherApp.sendSit(chair.id, chair.x, chair.y, chair.direction);
+      // Poker table integration: When sitting on a poker chair, open the Kosmi poker table!
+      if (chair.spaceId === 'poker_room' || chair.id?.startsWith('poker_chair')) {
+        const seatIdx = chair.seatIndex !== undefined ? chair.seatIndex : 0;
+        window.GatherApp.joinPokerSeat(seatIdx, chair.id);
+      }
     }
   }
 
@@ -551,6 +601,7 @@ export class MainScene extends Phaser.Scene {
     const info = player.getData('info');
     if (!info) return;
 
+    const prevChairId = info.chairId;
     info.isSitting = false;
     info.chairId = null;
     info.anim = 'idle';
@@ -560,6 +611,9 @@ export class MainScene extends Phaser.Scene {
 
     if (window.GatherApp) {
       window.GatherApp.sendStand(player.x, player.y);
+      if (prevChairId && (prevChairId.startsWith('poker_chair') || this.currentSpace === 'poker_room')) {
+        window.GatherApp.leavePokerSeat();
+      }
     }
   }
 

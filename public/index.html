@@ -242,15 +242,18 @@
         <!-- Presets and Input -->
         <div class="flex flex-col gap-2.5">
           <div class="flex items-center gap-2 overflow-x-auto pb-1">
-            <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap">Presets:</span>
-            <button class="media-preset-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-url="https://www.youtube.com/watch?v=jfKfPfyJRdk" data-title="Lofi Chill Beats">🎵 Lofi Radio</button>
-            <button class="media-preset-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-url="https://www.youtube.com/watch?v=4xDzrJKXOOY" data-title="Synthwave Chill">⚡ Synthwave</button>
-            <button class="media-preset-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-url="https://www.youtube.com/watch?v=DXUAyRRkI6k" data-title="Deep Work Coding Music">💻 Focus Music</button>
+            <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap">Live Radio:</span>
+            <button class="media-live-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-keyword="lofi hip hop live streaming radio">🎵 Lofi Girl Live</button>
+            <button class="media-live-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-keyword="jazz lofi beats live stream">🎷 Jazz Lofi Live</button>
+            <button class="media-live-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-keyword="synthwave chill live radio">⚡ Synthwave Live</button>
+            <button class="media-live-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-keyword="relaxing piano music live stream">☕ Relax Piano Live</button>
+            <button class="media-live-btn whitespace-nowrap px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-keyword="deep work coding music live stream">💻 Coding Ambient Live</button>
           </div>
 
           <div class="flex items-center gap-2">
-            <input id="media-title-input" type="text" placeholder="Title (optional)..." class="w-1/3 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
-            <input id="media-url-input" type="text" placeholder="Paste YouTube link or Video ID..." class="flex-1 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+            <input id="media-title-input" type="text" placeholder="Title (optional)..." class="w-1/4 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+            <input id="media-url-input" type="text" placeholder="Paste YouTube link, video ID, or search live music..." class="flex-1 bg-slate-800 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+            <button id="media-btn-search-live" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition whitespace-nowrap">🔍 Find Live</button>
             <button id="media-btn-apply" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition whitespace-nowrap">Play Video</button>
           </div>
         </div>
@@ -492,6 +495,103 @@
 
           <button id="btn-save-avatar" class="mt-2 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md transition">
             SAVE & ENTER OFFICE
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 8: Kosmi Texas Hold'em Poker Table (Cloned 1-to-1 from https://kosmi.io/poker/) -->
+  <div id="modal-poker" class="gather-modal-backdrop hidden">
+    <div class="gather-modal-card w-[940px] max-w-[96vw] bg-slate-950/95 border-emerald-500/40 shadow-[0_0_50px_rgba(5,150,105,0.25)] flex flex-col overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-5 py-3 border-b border-emerald-900/60 bg-emerald-950/40 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">♠️</span>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-black text-sm text-emerald-300 tracking-wider uppercase">Kosmi Texas Hold'em Poker</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white tracking-widest">LIVE</span>
+            </div>
+            <p id="poker-hand-eval-text" class="text-[11px] text-emerald-400/80 font-bold">Texas Hold'em No-Limit • kosmi.io</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="poker-btn-leave" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/80 transition">
+            Leave Table
+          </button>
+          <button class="btn-close-modal text-slate-400 hover:text-white">✕</button>
+        </div>
+      </div>
+
+      <!-- Winner Announcement Banner -->
+      <div id="poker-winner-banner" class="hidden px-4 py-2 bg-gradient-to-r from-amber-500/90 to-yellow-600/90 text-slate-950 font-black text-xs text-center shadow-md animate-bounce">
+        🏆 Winner Announcement
+      </div>
+
+      <!-- Poker Table Felt Canvas/Layout -->
+      <div class="relative p-6 flex flex-col items-center justify-center min-h-[440px] bg-radial-gradient from-slate-900 to-slate-950 overflow-hidden">
+        <!-- Oval Green Felt Table -->
+        <div id="poker-felt-table" class="relative w-[780px] h-[360px] rounded-[180px] bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-950 border-[14px] border-[#3E2110] shadow-[inset_0_0_50px_rgba(0,0,0,0.8),0_10px_35px_rgba(0,0,0,0.9)] flex flex-col items-center justify-center">
+          <!-- Inner Felt Inscription & Brass Trim -->
+          <div class="absolute inset-2 rounded-[165px] border border-emerald-400/30 pointer-events-none flex items-center justify-center">
+            <span class="text-emerald-900/40 font-black text-2xl tracking-[0.3em] select-none">KOSMI HOLD'EM</span>
+          </div>
+
+          <!-- Pot Display Pill -->
+          <div id="poker-pot-display" class="relative z-10 px-5 py-1.5 rounded-full bg-slate-950/80 border border-amber-400/60 text-amber-300 font-black text-sm tracking-wide shadow-lg mb-3">
+            Pot: 0 🪙
+          </div>
+
+          <!-- 5 Community Cards -->
+          <div id="poker-community-cards" class="relative z-10 flex items-center gap-2">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- 6 Player Seats Placed Around Table Perimeter -->
+          <!-- Seat 0: Top-Left -->
+          <div id="poker-seat-0" class="absolute -top-6 left-28 z-20"></div>
+          <!-- Seat 1: Top-Right -->
+          <div id="poker-seat-1" class="absolute -top-6 right-28 z-20"></div>
+          <!-- Seat 2: Far Right -->
+          <div id="poker-seat-2" class="absolute top-1/2 -translate-y-1/2 -right-8 z-20"></div>
+          <!-- Seat 3: Bottom-Right -->
+          <div id="poker-seat-3" class="absolute -bottom-6 right-28 z-20"></div>
+          <!-- Seat 4: Bottom-Left -->
+          <div id="poker-seat-4" class="absolute -bottom-6 left-28 z-20"></div>
+          <!-- Seat 5: Far Left -->
+          <div id="poker-seat-5" class="absolute top-1/2 -translate-y-1/2 -left-8 z-20"></div>
+        </div>
+      </div>
+
+      <!-- Action Console at Bottom -->
+      <div id="poker-action-console" class="px-6 py-3.5 bg-slate-900/95 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <!-- Quick Preset Bet Chips -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Bet:</span>
+          <button class="poker-quick-bet-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-type="min">Min</button>
+          <button class="poker-quick-bet-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-type="2x">2x</button>
+          <button class="poker-quick-bet-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-type="3x">3x</button>
+          <button class="poker-quick-bet-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/60 transition" data-type="pot">Pot</button>
+          <button class="poker-quick-bet-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 transition" data-type="allin">All-In</button>
+        </div>
+
+        <!-- Slider & Amount Display -->
+        <div class="flex items-center gap-3 flex-1 max-w-xs px-2">
+          <input id="poker-raise-slider" type="range" class="w-full accent-amber-500 cursor-pointer" />
+          <span id="poker-raise-amount-val" class="text-xs font-mono font-black text-amber-400 whitespace-nowrap">200 🪙</span>
+        </div>
+
+        <!-- Turn Action Buttons -->
+        <div class="flex items-center gap-2">
+          <button id="poker-btn-fold" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs shadow-lg transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+            Fold
+          </button>
+          <button id="poker-btn-check-call" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+            Check
+          </button>
+          <button id="poker-btn-raise" class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+            Raise
           </button>
         </div>
       </div>

@@ -56,6 +56,9 @@ export class NetworkManager {
     this.socket.on('notes_updated', (data) => this.emitLocal('notes_updated', data));
     this.socket.on('media_synced', (data) => this.emitLocal('media_synced', data));
     this.socket.on('media_error', (data) => this.emitLocal('media_error', data));
+    this.socket.on('webrtc_signal', (data) => this.emitLocal('webrtc_signal', data));
+    this.socket.on('poker_state', (data) => this.emitLocal('poker_state', data));
+    this.socket.on('poker_message', (data) => this.emitLocal('poker_message', data));
     this.socket.on('arcade_leaderboard_updated', (data) => this.emitLocal('arcade_leaderboard_updated', data));
     this.socket.on('roulette_started', (data) => this.emitLocal('roulette_started', data));
     this.socket.on('roulette_finished', (data) => this.emitLocal('roulette_finished', data));
@@ -200,6 +203,30 @@ export class NetworkManager {
   sendChat(channel, text, recipientId = null) {
     if (this.socket) {
       this.socket.emit('send_chat', { channel, text, recipientId });
+    }
+  }
+
+  sendWebRTCSignal(to, signal) {
+    if (this.socket) {
+      this.socket.emit('webrtc_signal', { to, signal });
+    }
+  }
+
+  sitPoker(seatIndex, chairId) {
+    if (this.socket) {
+      this.socket.emit('poker_sit', { seatIndex, chairId });
+    }
+  }
+
+  standPoker() {
+    if (this.socket) {
+      this.socket.emit('poker_stand');
+    }
+  }
+
+  pokerAction(action, amount = 0) {
+    if (this.socket) {
+      this.socket.emit('poker_action', { action, amount });
     }
   }
 }

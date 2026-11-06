@@ -9,12 +9,16 @@ import { GATHER_CONFIG } from './config.js';
 import { MainScene } from './mainScene.js';
 import { NetworkManager } from './network.js';
 import { UIManager } from './uiManager.js';
+import { WebRTCManager } from './webrtcManager.js';
+import { PokerManager } from './pokerManager.js';
 
 class GatherAppController {
   constructor() {
     this.network = new NetworkManager();
     this.scene = null;
     this.ui = null;
+    this.webrtc = null;
+    this.poker = null;
     this.game = null;
 
     this.localPlayerState = null;
@@ -59,6 +63,10 @@ class GatherAppController {
   onSceneReady(scene) {
     this.scene = scene;
     this.ui = new UIManager(this.network, this.scene);
+    this.webrtc = new WebRTCManager(this.network, this.ui);
+    this.ui.webrtc = this.webrtc;
+    this.poker = new PokerManager(this.network, this.ui);
+    this.ui.poker = this.poker;
 
     if (this.pendingInitState) {
       this.handleInitState(this.pendingInitState);
@@ -298,6 +306,21 @@ class GatherAppController {
     }
     this.network.sendMovement(x, y, dir, anim);
     if (this.ui) this.ui.renderVideoGrid();
+    if (this.webrtc) {
+      this.webrtc.updateProximityVolumes(this.localPlayerState, this.allPlayers);
+    }
+  }
+
+  joinPokerSeat(seatIndex, chairId) {
+    if (this.poker) {
+      this.poker.joinSeat(seatIndex, chairId);
+    }
+  }
+
+  leavePokerSeat() {
+    if (this.poker) {
+      this.poker.leaveTable();
+    }
   }
 
   sendIdle(x, y, dir) {

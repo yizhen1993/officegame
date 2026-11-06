@@ -35,6 +35,7 @@ export class UIManager {
       bulletin: document.getElementById('modal-bulletin'),
       coffee: document.getElementById('modal-coffee'),
       wheel: document.getElementById('modal-wheel'),
+      poker: document.getElementById('modal-poker'),
       avatarStudio: document.getElementById('modal-avatar-studio')
     };
 
@@ -73,12 +74,17 @@ export class UIManager {
   }
 
   bindDOMEvents() {
-    // 1. Bottom Dock Media Toggles
+    // 1. Bottom Dock Media Toggles (WebRTC Real Mic, Camera & ScreenShare)
     if (this.btnMic) {
-      this.btnMic.addEventListener('click', () => {
+      this.btnMic.addEventListener('click', async () => {
         if (!this.localPlayerState) return;
-        const cur = this.localPlayerState.avState.mic;
-        this.localPlayerState.avState.mic = !cur;
+        if (this.webrtc) {
+          const micOn = await this.webrtc.toggleMic();
+          this.localPlayerState.avState.mic = micOn;
+        } else {
+          const cur = this.localPlayerState.avState.mic;
+          this.localPlayerState.avState.mic = !cur;
+        }
         this.updateDockAVButtons();
         this.network.updateAVState(this.localPlayerState.avState);
         this.renderVideoGrid();
@@ -86,10 +92,15 @@ export class UIManager {
     }
 
     if (this.btnCam) {
-      this.btnCam.addEventListener('click', () => {
+      this.btnCam.addEventListener('click', async () => {
         if (!this.localPlayerState) return;
-        const cur = this.localPlayerState.avState.camera;
-        this.localPlayerState.avState.camera = !cur;
+        if (this.webrtc) {
+          const camOn = await this.webrtc.toggleCamera();
+          this.localPlayerState.avState.camera = camOn;
+        } else {
+          const cur = this.localPlayerState.avState.camera;
+          this.localPlayerState.avState.camera = !cur;
+        }
         this.updateDockAVButtons();
         this.network.updateAVState(this.localPlayerState.avState);
         this.renderVideoGrid();
@@ -97,10 +108,15 @@ export class UIManager {
     }
 
     if (this.btnScreen) {
-      this.btnScreen.addEventListener('click', () => {
+      this.btnScreen.addEventListener('click', async () => {
         if (!this.localPlayerState) return;
-        const cur = this.localPlayerState.avState.screenShare;
-        this.localPlayerState.avState.screenShare = !cur;
+        if (this.webrtc) {
+          const screenOn = await this.webrtc.toggleScreenShare();
+          this.localPlayerState.avState.screenShare = screenOn;
+        } else {
+          const cur = this.localPlayerState.avState.screenShare;
+          this.localPlayerState.avState.screenShare = !cur;
+        }
         this.updateDockAVButtons();
         this.network.updateAVState(this.localPlayerState.avState);
         this.renderVideoGrid();
@@ -274,6 +290,22 @@ export class UIManager {
           e.preventDefault();
           handleApplyMedia();
         }
+      });
+    }
+
+    // Live Radio Buttons (Direct Grab from YouTube Live Search API)
+    document.querySelectorAll('.media-live-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const keyword = btn.getAttribute('data-keyword');
+        this.fetchAndPlayLiveMusic(keyword);
+      });
+    });
+
+    const btnSearchLive = document.getElementById('media-btn-search-live');
+    if (btnSearchLive) {
+      btnSearchLive.addEventListener('click', () => {
+        const query = (mediaUrlInput ? mediaUrlInput.value.trim() : '') || 'lofi hip hop live streaming radio';
+        this.fetchAndPlayLiveMusic(query);
       });
     }
 
@@ -561,6 +593,9 @@ export class UIManager {
       if (modalKey === 'arcade' && this.arcadeGame) {
         this.arcadeGame.render();
       }
+      if (modalKey === 'poker' && this.poker) {
+        this.poker.render();
+      }
       if (modalKey === 'bulletin') {
         const inp = document.getElementById('note-title-input');
         if (inp) setTimeout(() => inp.focus(), 100);
@@ -620,32 +655,74 @@ export class UIManager {
       if (isConnected) {
         const tile = this.createVideoTile(player, false);
         this.videoGridContainer.appendChild(tile);
+
+        // Auto-negotiate WebRTC connection with nearby peers
+        if (this.webrtc && !this.webrtc.peers.has(player.id)) {
+          const isInitiator = (this.localPlayerState.id < player.id);
+          this.webrtc.connectToPeer(player.id, isInitiator);
+        }
+      } else {
+        // Disconnect WebRTC peer if player went out of range or to another room
+        if (this.webrtc && this.webrtc.peers.has(player.id)) {
+          this.webrtc.closePeer(player.id);
+        }
       }
     });
+
+    if (this.webrtc) {
+      this.webrtc.updateProximityVolumes(this.localPlayerState, this.allPlayers);
+    }
   }
 
   createVideoTile(player, isSelf) {
     const card = document.createElement('div');
     card.className = 'gather-video-tile relative flex-shrink-0 w-36 h-24 rounded-xl overflow-hidden bg-slate-900 border border-slate-700/80 shadow-lg';
+    if (isSelf) {
+      card.id = 'self-video-tile';
+    }
 
-    // Simulated / WebRTC video container
-    const isCamOn = player.avState?.camera;
+    const isCamOn = player.avState?.camera || player.avState?.screenShare;
     const isMicOn = player.avState?.mic;
 
     if (isCamOn) {
-      // Sleek live camera stream representation
-      card.innerHTML = `
-        <div class="w-full h-full bg-slate-800 flex items-center justify-center relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent z-10"></div>
-          <div class="w-12 h-12 rounded-full border-2 border-emerald-400 animate-pulse flex items-center justify-center text-lg bg-slate-700 text-white font-black">
-            ${player.name.charAt(0).toUpperCase()}
+      if (isSelf) {
+        // Local webcam video element
+        card.innerHTML = `
+          <div class="w-full h-full bg-slate-950 flex items-center justify-center relative overflow-hidden">
+            <video id="self-video-stream" class="w-full h-full object-cover" autoplay playsinline muted></video>
+            <div class="absolute top-1.5 left-1.5 z-20 flex items-center gap-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-emerald-400 font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>LIVE</span>
+            </div>
           </div>
-          <div class="absolute top-1.5 left-1.5 z-20 flex items-center gap-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-emerald-400 font-bold">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-            <span>LIVE</span>
+        `;
+        setTimeout(() => {
+          const vid = card.querySelector('#self-video-stream');
+          if (vid && this.webrtc?.localStream) {
+            vid.srcObject = this.webrtc.localStream;
+            vid.play().catch(() => {});
+          }
+        }, 10);
+      } else {
+        // Remote peer WebRTC video element
+        card.innerHTML = `
+          <div class="w-full h-full bg-slate-950 flex items-center justify-center relative overflow-hidden">
+            <video id="video-stream-${player.id}" class="w-full h-full object-cover" autoplay playsinline></video>
+            <div class="absolute top-1.5 left-1.5 z-20 flex items-center gap-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-emerald-400 font-bold">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>LIVE</span>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+        setTimeout(() => {
+          const vid = card.querySelector(`#video-stream-${player.id}`);
+          const peer = this.webrtc?.peers.get(player.id);
+          if (vid && peer?.remoteStream) {
+            vid.srcObject = peer.remoteStream;
+            vid.play().catch(() => {});
+          }
+        }, 10);
+      }
     } else {
       // Camera off: Shows customized avatar circle with talking ring
       card.innerHTML = `
@@ -846,6 +923,24 @@ export class UIManager {
     }
     if (titleEl && media.title) {
       titleEl.textContent = `▶ ${media.title} (Shared by ${media.setBy})`;
+    }
+  }
+
+  async fetchAndPlayLiveMusic(keyword) {
+    this.showToast(`🔍 Grabbing active live stream: "${keyword}"...`, '#6366F1');
+    try {
+      const res = await fetch(`/api/youtube/live-radio?keyword=${encodeURIComponent(keyword)}`);
+      const data = await res.json();
+      if (data.success && data.videos && data.videos.length > 0) {
+        const topVideo = data.videos[0];
+        this.network.changeMedia(topVideo.url, topVideo.title);
+        this.showToast(`▶ Now streaming live: ${topVideo.title}`, '#10B981');
+      } else {
+        this.showToast('⚠️ No active live stream found for that keyword', '#F59E0B');
+      }
+    } catch (e) {
+      console.error('[Live Radio] Fetch error:', e);
+      this.showToast('⚠️ Could not connect to YouTube live search API', '#EF4444');
     }
   }
 

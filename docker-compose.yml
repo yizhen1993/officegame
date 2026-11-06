@@ -10,6 +10,7 @@ services:
     volumes:
       - ./public:/app/public
       - ./server.js:/app/server.js
+      - ./pokerEngine.js:/app/pokerEngine.js
     environment:
       - PORT=3000
       - NODE_ENV=production

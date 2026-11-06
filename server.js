@@ -17,9 +17,11 @@
 
 const express = require('express');
 const http = require('http');
+const https = require('https');
 const path = require('path');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const { PokerEngine } = require('./pokerEngine.js');
 
 const app = express();
 const server = http.createServer(app);
@@ -55,6 +57,7 @@ const GATHER_OFFICE_STATE = {
     brainstorm: { name: 'Brainstorm Lab', maxCapacity: 8, isPrivate: true },
     lounge: { name: 'Cozy Lounge & Fireplace', maxCapacity: 12, isPrivate: true },
     cafeteria: { name: 'Cafeteria & Arcade Bar', maxCapacity: 16, isPrivate: true },
+    poker_room: { name: 'Texas Hold\'em Poker Lounge', maxCapacity: 12, isPrivate: true },
     pod_1: { name: 'Quiet Focus Pod 1', maxCapacity: 2, isPrivate: true },
     pod_2: { name: 'Quiet Focus Pod 2', maxCapacity: 2, isPrivate: true },
     pod_3: { name: 'Quiet Focus Pod 3', maxCapacity: 2, isPrivate: true },
@@ -218,6 +221,132 @@ function sanitizeYouTubeUrl(url) {
   }
   return null;
 }
+
+// ----------------------------------------------------------------------------
+// YouTube Live Music & Radio Stream Scraper with Cache
+// ----------------------------------------------------------------------------
+const LIVE_RADIO_CACHE = new Map();
+const CACHE_TTL_MS = 20 * 60 * 1000; // 20 minutes
+
+function getFallbackLiveStreams(keyword) {
+  return [
+    {
+      videoId: 'rFZHOHl-L8A',
+      title: 'lofi hip hop radio 📚 beats to relax/study to',
+      channel: 'Lofi Girl',
+      isLive: true,
+      url: 'https://www.youtube.com/watch?v=rFZHOHl-L8A',
+      embedUrl: 'https://www.youtube.com/embed/rFZHOHl-L8A?autoplay=1&mute=0&controls=1'
+    },
+    {
+      videoId: '4xDzrJKXOOY',
+      title: 'synthwave radio 🌌 chill beats to game/code to',
+      channel: 'Lofi Girl',
+      isLive: true,
+      url: 'https://www.youtube.com/watch?v=4xDzrJKXOOY',
+      embedUrl: 'https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=1&mute=0&controls=1'
+    },
+    {
+      videoId: 'E2vONfzoyRI',
+      title: 'jazz lofi radio 🎷 beats to chill/study to',
+      channel: 'Lofi Girl',
+      isLive: true,
+      url: 'https://www.youtube.com/watch?v=E2vONfzoyRI',
+      embedUrl: 'https://www.youtube.com/embed/E2vONfzoyRI?autoplay=1&mute=0&controls=1'
+    },
+    {
+      videoId: 'K0-6reET2BY',
+      title: 'Relaxing Piano Music & Soft Rain for Deep Focus & Sleep',
+      channel: 'Relaxing Piano',
+      isLive: true,
+      url: 'https://www.youtube.com/watch?v=K0-6reET2BY',
+      embedUrl: 'https://www.youtube.com/embed/K0-6reET2BY?autoplay=1&mute=0&controls=1'
+    }
+  ];
+}
+
+async function searchYouTubeLiveStreams(keyword = 'lofi hip hop live streaming music') {
+  const cacheKey = (keyword || 'lofi').toLowerCase().trim();
+  const cached = LIVE_RADIO_CACHE.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    return cached.results;
+  }
+
+  return new Promise((resolve) => {
+    const query = encodeURIComponent(keyword);
+    // sp=EgJAAQ%253D%253D strictly filters YouTube search for LIVE streams
+    const searchUrl = `https://www.youtube.com/results?search_query=${query}&sp=EgJAAQ%253D%253D`;
+
+    const req = https.get(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9'
+      },
+      timeout: 7000
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const match = data.match(/ytInitialData\s*=\s*({.+?});<\/script>/);
+          if (!match) {
+            return resolve(getFallbackLiveStreams(keyword));
+          }
+
+          const json = JSON.parse(match[1]);
+          const contents = json.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents?.[0]?.itemSectionRenderer?.contents || [];
+
+          const videos = [];
+          for (const item of contents) {
+            const v = item.videoRenderer;
+            if (v && v.videoId) {
+              const title = v.title?.runs?.[0]?.text || 'Live Stream';
+              const channel = v.ownerText?.runs?.[0]?.text || 'Creator';
+              const badges = v.badges?.map(b => b.metadataBadgeRenderer?.label) || [];
+              const isLive = badges.some(b => typeof b === 'string' && b.toUpperCase().includes('LIVE'));
+
+              videos.push({
+                videoId: v.videoId,
+                title,
+                channel,
+                isLive: isLive || true,
+                url: `https://www.youtube.com/watch?v=${v.videoId}`,
+                embedUrl: `https://www.youtube.com/embed/${v.videoId}?autoplay=1&mute=0&controls=1`
+              });
+            }
+          }
+
+          const results = videos.length > 0 ? videos.slice(0, 10) : getFallbackLiveStreams(keyword);
+          LIVE_RADIO_CACHE.set(cacheKey, { timestamp: Date.now(), results });
+          resolve(results);
+        } catch (e) {
+          console.error('[YouTube Live] Scraping parse error:', e.message);
+          resolve(getFallbackLiveStreams(keyword));
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      console.warn('[YouTube Live] Scraping network error:', err.message);
+      resolve(getFallbackLiveStreams(keyword));
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(getFallbackLiveStreams(keyword));
+    });
+  });
+}
+
+// Live Radio API endpoint
+app.get('/api/youtube/live-radio', async (req, res) => {
+  const keyword = req.query.keyword || 'lofi hip hop live streaming radio';
+  const videos = await searchYouTubeLiveStreams(keyword);
+  res.json({ success: true, count: videos.length, videos });
+});
+
+// Initialize Poker Engine
+const poker = new PokerEngine(io);
 
 // ============================================================================
 // 2. SOCKET.IO EVENT HANDLING
@@ -676,10 +805,39 @@ io.on('connection', (socket) => {
   });
 
   // --------------------------------------------------------------------------
+  // WebRTC Audio/Video P2P Signaling
+  // --------------------------------------------------------------------------
+  socket.on('webrtc_signal', ({ to, signal }) => {
+    io.to(to).emit('webrtc_signal', {
+      from: socket.id,
+      signal
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // Texas Hold'em Poker Table Events
+  // --------------------------------------------------------------------------
+  socket.on('poker_sit', (data) => {
+    const player = GATHER_OFFICE_STATE.players[socket.id];
+    if (player) {
+      poker.sit(socket.id, player.name, player.avatar, data.seatIndex, data.chairId);
+    }
+  });
+
+  socket.on('poker_stand', () => {
+    poker.stand(socket.id);
+  });
+
+  socket.on('poker_action', (data) => {
+    poker.handleAction(socket.id, data.action, data.amount);
+  });
+
+  // --------------------------------------------------------------------------
   // Disconnect
   // --------------------------------------------------------------------------
   socket.on('disconnect', () => {
     console.log(`[Gather.town v2] 🔴 Player disconnected: ${socket.id}`);
+    poker.stand(socket.id);
     const player = GATHER_OFFICE_STATE.players[socket.id];
     delete GATHER_OFFICE_STATE.players[socket.id];
 

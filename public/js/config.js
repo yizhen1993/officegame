@@ -70,6 +70,13 @@ export const GATHER_CONFIG = {
       bounds: { x1: 1088, y1: 704, x2: 1568, y2: 1184 },
       desc: 'Espresso coffee bar, water cooler, arcade cabinet & icebreaker wheel.'
     },
+    poker_room: {
+      id: 'poker_room',
+      name: 'Kosmi Texas Hold\'em Poker Club',
+      color: '#059669', // Emerald felt
+      bounds: { x1: 576, y1: 864, x2: 1024, y2: 1184 },
+      desc: 'Multiplayer No-Limit Texas Hold\'em poker room cloned 1-to-1 from Kosmi.io. Sit at any chair to play!'
+    },
     open_office: {
       id: 'open_office',
       name: 'Open Office Hallway',
@@ -134,11 +141,30 @@ export const GATHER_CONFIG = {
     // Lounge Sectional Sofa Seats
     { id: 'lounge_sofa_1', x: 232, y: 880, direction: 'down', spaceId: 'lounge' },
     { id: 'lounge_sofa_2', x: 256, y: 880, direction: 'down', spaceId: 'lounge' },
-    { id: 'lounge_sofa_3', x: 280, y: 880, direction: 'down', spaceId: 'lounge' }
+    { id: 'lounge_sofa_3', x: 280, y: 880, direction: 'down', spaceId: 'lounge' },
+
+    // Kosmi Texas Hold'em Poker Table (6-Seat Table)
+    { id: 'poker_chair_1', x: 752, y: 976, direction: 'down', spaceId: 'poker_room', seatIndex: 0 },
+    { id: 'poker_chair_2', x: 848, y: 976, direction: 'down', spaceId: 'poker_room', seatIndex: 1 },
+    { id: 'poker_chair_3', x: 888, y: 1024, direction: 'left', spaceId: 'poker_room', seatIndex: 2 },
+    { id: 'poker_chair_4', x: 848, y: 1072, direction: 'up', spaceId: 'poker_room', seatIndex: 3 },
+    { id: 'poker_chair_5', x: 752, y: 1072, direction: 'up', spaceId: 'poker_room', seatIndex: 4 },
+    { id: 'poker_chair_6', x: 712, y: 1024, direction: 'right', spaceId: 'poker_room', seatIndex: 5 }
   ],
 
   // Interactive Objects with Gather.town prompt
   INTERACTIVE_OBJECTS: [
+    {
+      id: 'obj_poker',
+      type: 'poker',
+      name: 'Kosmi Texas Hold\'em Poker Table',
+      prompt: 'Press X to open Poker Table',
+      x: 800,
+      y: 928,
+      width: 96,
+      height: 48,
+      modalId: 'modal-poker'
+    },
     {
       id: 'obj_whiteboard',
       type: 'whiteboard',
