@@ -35,6 +35,9 @@ export class WebRTCManager {
 
     this.setupSocketListeners();
     this.setupAutoplayUnlock();
+
+    // Global hook for WebRTC popout
+    window.showWebRTCPopout = (remoteId, state) => this.showWebRTCPopout(remoteId, state);
   }
 
   setupAutoplayUnlock() {
@@ -281,6 +284,8 @@ export class WebRTCManager {
   async connectToPeer(remoteId, isInitiator = false) {
     if (this.peers.has(remoteId)) return;
 
+    this.showWebRTCPopout(remoteId, 'connecting');
+
     const pc = new RTCPeerConnection(this.rtcConfig);
     const peerData = {
       pc,
@@ -347,8 +352,18 @@ export class WebRTCManager {
 
     pc.onconnectionstatechange = () => {
       console.log(`[WebRTC] Connection with ${remoteId} state: ${pc.connectionState}`);
+      this.showWebRTCPopout(remoteId, pc.connectionState);
       if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed' || pc.connectionState === 'closed') {
         this.closePeer(remoteId);
+      }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.log(`[WebRTC] ICE Connection with ${remoteId} state: ${pc.iceConnectionState}`);
+      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+        this.showWebRTCPopout(remoteId, 'connected');
+      } else if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+        this.showWebRTCPopout(remoteId, pc.iceConnectionState);
       }
     };
 
@@ -481,6 +496,120 @@ export class WebRTCManager {
       peer.pc.close();
     }
     this.peers.delete(remoteId);
+    this.showWebRTCPopout(remoteId, 'disconnected');
+  }
+
+  // --------------------------------------------------------------------------
+  // Bottom-Right WebRTC State Popout Notification
+  // --------------------------------------------------------------------------
+  showWebRTCPopout(remoteId, state) {
+    if (!remoteId) return;
+
+    const normalizedState = (state || 'unknown').toLowerCase();
+
+    // Ensure container exists at bottom-right of viewport
+    let container = document.getElementById('webrtc-popout-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'webrtc-popout-container';
+      container.className = 'fixed bottom-6 right-6 z-[100] flex flex-col gap-2.5 items-end pointer-events-none select-none';
+      document.body.appendChild(container);
+    }
+
+    const cleanId = String(remoteId).replace(/[^a-zA-Z0-9_-]/g, '');
+    const toastId = `webrtc-toast-${cleanId}`;
+    let toast = document.getElementById(toastId);
+
+    // Color theme & status configurations
+    let stateColorClass = 'text-amber-400';
+    let borderColorClass = 'border-amber-500/50 shadow-[0_4px_25px_rgba(245,158,11,0.25)]';
+    let badgeStyle = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+    let dotColor = 'bg-amber-400';
+    let statusText = 'CONNECTING';
+    let pulseAnim = 'animate-ping';
+    let autoDismissDelay = 8000;
+
+    if (normalizedState === 'connected') {
+      stateColorClass = 'text-emerald-400';
+      borderColorClass = 'border-emerald-500/60 shadow-[0_4px_25px_rgba(16,185,129,0.3)]';
+      badgeStyle = 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50';
+      dotColor = 'bg-emerald-400';
+      statusText = 'CONNECTED';
+      pulseAnim = 'animate-pulse';
+      autoDismissDelay = 5000;
+    } else if (normalizedState === 'disconnected' || normalizedState === 'failed' || normalizedState === 'closed') {
+      stateColorClass = 'text-rose-400';
+      borderColorClass = 'border-rose-500/60 shadow-[0_4px_25px_rgba(244,63,94,0.3)]';
+      badgeStyle = 'bg-rose-500/25 text-rose-300 border-rose-500/50';
+      dotColor = 'bg-rose-400';
+      statusText = normalizedState.toUpperCase();
+      pulseAnim = '';
+      autoDismissDelay = 4000;
+    }
+
+    // Find remote player's name if known
+    const player = this.ui?.allPlayers?.get(remoteId) || (window.GatherApp?.allPlayers?.get(remoteId));
+    const playerName = player?.name || null;
+
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = toastId;
+      toast.className = `pointer-events-auto flex items-center justify-between gap-3 min-w-[280px] max-w-[350px] px-3.5 py-2.5 rounded-2xl bg-slate-950/95 backdrop-blur-md border ${borderColorClass} shadow-2xl transition-all duration-300 transform translate-y-3 opacity-0`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+    } else {
+      toast.className = `pointer-events-auto flex items-center justify-between gap-3 min-w-[280px] max-w-[350px] px-3.5 py-2.5 rounded-2xl bg-slate-950/95 backdrop-blur-md border ${borderColorClass} shadow-2xl transition-all duration-300`;
+    }
+
+    toast.innerHTML = `
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="relative flex h-2.5 w-2.5 flex-shrink-0">
+          ${pulseAnim ? `<span class="${pulseAnim} absolute inline-flex h-full w-full rounded-full ${dotColor} opacity-75"></span>` : ''}
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 ${dotColor}"></span>
+        </span>
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-mono font-bold tracking-wider text-slate-400">[WebRTC]</span>
+            <span class="text-[9px] font-mono font-black px-1.5 py-0.5 rounded border ${badgeStyle}">${statusText}</span>
+          </div>
+          <div class="text-xs font-semibold text-slate-200 truncate mt-0.5" title="${remoteId}">
+            Connection with <span class="font-mono text-slate-100 font-bold">${playerName ? `${playerName} <span class="text-slate-400 text-[10px]">(${remoteId.slice(0, 8)}...)</span>` : remoteId}</span>
+          </div>
+          <div class="text-[10px] ${stateColorClass} font-mono mt-0.5 flex items-center gap-1">
+            <span>state:</span>
+            <b class="font-bold underline">${normalizedState}</b>
+          </div>
+        </div>
+      </div>
+      <button class="webrtc-toast-close flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer">✕</button>
+    `;
+
+    // Hook dismiss button
+    const closeBtn = toast.querySelector('.webrtc-toast-close');
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        toast.classList.add('opacity-0', 'translate-y-3');
+        setTimeout(() => toast.remove(), 250);
+      };
+    }
+
+    // Auto-dismiss timer
+    if (toast._dismissTimer) {
+      clearTimeout(toast._dismissTimer);
+      toast._dismissTimer = null;
+    }
+    if (autoDismissDelay > 0) {
+      toast._dismissTimer = setTimeout(() => {
+        if (toast && toast.parentElement) {
+          toast.classList.add('opacity-0', 'translate-y-3');
+          setTimeout(() => toast.remove(), 250);
+        }
+      }, autoDismissDelay);
+    }
   }
 
   // --------------------------------------------------------------------------

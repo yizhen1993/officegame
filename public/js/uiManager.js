@@ -1134,6 +1134,14 @@ export class UIManager {
     }, 2500);
   }
 
+  showWebRTCPopout(remoteId, state) {
+    if (this.webrtc && typeof this.webrtc.showWebRTCPopout === 'function') {
+      this.webrtc.showWebRTCPopout(remoteId, state);
+    } else if (typeof window.showWebRTCPopout === 'function') {
+      window.showWebRTCPopout(remoteId, state);
+    }
+  }
+
   // ==========================================================================
   // ICEBREAKER WHEEL OF FORTUNE (ROULETTE)
   // ==========================================================================
