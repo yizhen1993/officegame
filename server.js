@@ -357,16 +357,9 @@ io.on('connection', (socket) => {
 
   const defaultSetup = generateRandomAvatar();
 
-  // Spawn Point: Extreme East-South (Bottom-Right) Corner of the Whole Map
-  // Map dimensions: 1600 x 1216 (W: 50 tiles, H: 38 tiles)
-  // East wall starts at x=1568, South wall starts at y=1184
-  const spawnBaseX = 1536; // Extreme East corner floor tile
-  const spawnBaseY = 1152; // Extreme South corner floor tile
-  // Slight interior jitter so simultaneous players don't stack directly on each other
-  const jitterX = -Math.floor(Math.random() * 3) * 12;
-  const jitterY = -Math.floor(Math.random() * 3) * 12;
-  const spawnX = spawnBaseX + jitterX;
-  const spawnY = spawnBaseY + jitterY;
+  // Fixed Spawn Point: Extreme East-South Corner of the Whole Map
+  const spawnX = 1524;
+  const spawnY = 1152;
 
   const tile = Math.floor(spawnX / 32);
   const row = Math.floor(spawnY / 32);
