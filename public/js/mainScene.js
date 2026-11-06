@@ -367,12 +367,13 @@ export class MainScene extends Phaser.Scene {
   // DYNAMIC CAMERA ZOOM CONTROLS (Mouse Wheel, Pinch, Keyboard Shortcuts)
   // ==========================================================================
   setupZoomControls() {
-    this.currentZoom = 1.0;
+    this.defaultZoom = 1.4;
+    this.currentZoom = 1.4;
 
     const applyZoom = (targetZoom) => {
       const clampedZoom = Phaser.Math.Clamp(
         Math.round(targetZoom * 10) / 10,
-        1.0,
+        0.8,
         2.5
       );
       if (Math.abs(this.cameras.main.zoom - clampedZoom) < 0.01) return;
@@ -390,7 +391,9 @@ export class MainScene extends Phaser.Scene {
             GATHER_CONFIG.MAP_WIDTH_PX + padX * 2,
             GATHER_CONFIG.MAP_HEIGHT_PX + padY * 2
           );
-          this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
+          if (!this.cameras.main._follow) {
+            this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
+          }
         }
       } else {
         this.cameras.main.stopFollow();
@@ -408,7 +411,7 @@ export class MainScene extends Phaser.Scene {
       applyZoom(this.cameras.main.zoom + step);
     });
 
-    // 2. Keyboard Zoom Shortcuts (+ / - / 0 to reset)
+    // 2. Keyboard Zoom Shortcuts (+ / - / 0 to reset to default)
     this.input.keyboard.on('keydown', (event) => {
       if (this.isTyping() || window.GatherApp?.isModalOpen()) return;
       if (event.key === '=' || event.key === '+') {
@@ -416,13 +419,13 @@ export class MainScene extends Phaser.Scene {
       } else if (event.key === '-' || event.key === '_') {
         applyZoom(this.cameras.main.zoom - 0.1);
       } else if (event.key === '0') {
-        applyZoom(1.0);
+        applyZoom(this.defaultZoom);
       }
     });
 
     // 3. Touch Pinch-to-Zoom (for mobile / tablet)
     let initialPinchDist = null;
-    let initialPinchZoom = 1.0;
+    let initialPinchZoom = this.defaultZoom;
 
     this.input.on('pointermove', () => {
       const p1 = this.input.pointer1;
@@ -475,10 +478,13 @@ export class MainScene extends Phaser.Scene {
     // Physical collisions with walls & furniture
     this.playerCollider = this.physics.add.collider(this.localPlayer, this.wallsGroup);
 
-    // Fixed stationary camera showing full map identically on all devices
-    this.cameras.main.setBounds(0, 0, GATHER_CONFIG.MAP_WIDTH_PX, GATHER_CONFIG.MAP_HEIGHT_PX);
-    this.cameras.main.setScroll(0, 0);
-    this.cameras.main.setZoom(1.0);
+    // Camera view default is zoomed in (1.4x) following player; user can zoom out with mouse
+    if (this.applyZoom) {
+      this.applyZoom(this.defaultZoom || 1.4);
+    } else {
+      this.cameras.main.setZoom(1.4);
+      this.cameras.main.startFollow(this.localPlayer, true, 0.08, 0.08);
+    }
 
     // Immediately evaluate active space for initial spawn position
     this.updateCurrentSpace();
